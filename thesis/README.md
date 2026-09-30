@@ -7,6 +7,7 @@ Infrastructure** (Master's thesis, Mazharul Islam Tusar).
 | --- | --- |
 | [proposal.md](proposal.md) | The approved research proposal (text, diffable) |
 | [proposal.pdf](proposal.pdf) · [proposal.docx](proposal.docx) | The same proposal as PDF and Word |
+| [proposal-2page.md](proposal-2page.md) · [proposal-2page.pdf](proposal-2page.pdf) | Two-page version of the proposal (title, abstract, problem, RQs/objectives/hypotheses, literature, method, significance, references) |
 | [methodology.md](methodology.md) | Methodology and evaluation criteria: DSR design, hypotheses H1–H8 with pass criteria, protocol, validity (also a live doc in Claude) |
 | This file | Where each research question and chapter gets its evidence, what changed since the proposal, and what is left |
 
