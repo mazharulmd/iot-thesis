@@ -1,0 +1,40 @@
+# Local development stack for dc-selfheal.
+# All ports are bound to 127.0.0.1 so nothing is exposed to the internet.
+# Reach them from your laptop with an SSH tunnel (see docs/local-setup.md).
+
+services:
+  localstack:
+    container_name: dc-localstack
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # AWS API gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external service ports
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:?Set LOCALSTACK_AUTH_TOKEN in .env}
+      - DEBUG=${DEBUG:-0}
+      - PERSISTENCE=${PERSISTENCE:-1}     # keep resources across restarts
+      # Save state only when LocalStack stops (make down). The default (every 15 s) locks each
+      # changed service while it saves, which stalls DynamoDB more and more as telemetry grows.
+      - SNAPSHOT_SAVE_STRATEGY=${SNAPSHOT_SAVE_STRATEGY:-ON_SHUTDOWN}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-ap-south-1}
+      - LAMBDA_KEEPALIVE_MS=600000         # keep Lambda containers warm for 10 min
+    volumes:
+      - "./.localstack:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"   # Lambda runs in sibling containers
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  mosquitto:
+    # Local stand-in for AWS IoT Core (IoT Core is not in LocalStack's free plans).
+    container_name: dc-mosquitto
+    image: eclipse-mosquitto:2
+    ports:
+      - "127.0.0.1:1883:1883"
+    volumes:
+      - "./local/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - "./.mosquitto/data:/mosquitto/data"
+    restart: unless-stopped

@@ -1,0 +1,24 @@
+name: pdu_overload
+description: >
+  All racks in zone 3 are pushed to 112 % of rating at 30 min (burst jobs), taking the PDU
+  close to its limit. High-risk remediation (after approval): cap each rack at 40 kW.
+duration_s: 5400
+seed: 9
+faults:
+  - {type: pdu_overload, target: zone3, start_s: 1800, severity: 1.12}
+actions:
+  - {at_s: 2100, asset: rack11, desired: {cap_kw: 40}}
+  - {at_s: 2100, asset: rack12, desired: {cap_kw: 40}}
+  - {at_s: 2100, asset: rack13, desired: {cap_kw: 40}}
+  - {at_s: 2100, asset: rack14, desired: {cap_kw: 40}}
+  - {at_s: 2100, asset: rack15, desired: {cap_kw: 40}}
+plot:
+  panels:
+    - title: Zone 3 PDU load
+      ylabel: "% of rating"
+      series: [zone3.pdu3.load_pct]
+      limits: [{value: 90, label: warning 90 %}]
+    - title: Zone 3 rack inlet temperatures
+      ylabel: °C
+      series: [zone3.rack11.t_in, zone3.rack13.t_in, zone3.rack15.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]

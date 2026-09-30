@@ -1,0 +1,2 @@
+pytest>=8.0
+moto[dynamodb,s3,sqs,events,stepfunctions]>=5.0

@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-synth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt -r requirements-dev.txt -r requirements-sim.txt -r requirements-ml.txt
+          npm install -g aws-cdk
+
+      - name: Unit tests
+        run: pytest -q
+
+      - name: Build the detector Lambda package
+        run: python -m tools.build_lambda
+
+      - name: CDK synth (no AWS credentials needed)
+        run: cdk synth -c stage=ci -c alert_email=ci@example.com > /dev/null

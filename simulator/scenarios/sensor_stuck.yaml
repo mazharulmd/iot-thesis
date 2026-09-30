@@ -1,0 +1,16 @@
+name: sensor_stuck
+description: The inlet sensor of rack07 freezes at 30 min. Remediation flags the sensor.
+duration_s: 5400
+seed: 3
+faults:
+  - {type: sensor_stuck, target: zone2.rack07.t_in, start_s: 1800}
+actions:
+  - {at_s: 1920, asset: rack07, desired: {sensor_flag: t_in}}
+plot:
+  panels:
+    - title: Rack07 inlet (faulty sensor) vs neighbours
+      ylabel: °C
+      series: [zone2.rack07.t_in, zone2.rack06.t_in, zone2.rack08.t_in]
+    - title: Rack07 power (heat still changes)
+      ylabel: kW
+      series: [zone2.rack07.p_kw]

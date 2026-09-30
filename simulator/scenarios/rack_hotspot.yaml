@@ -1,0 +1,19 @@
+name: rack_hotspot
+description: >
+  Rack07 loses 65 % of its cold air (e.g. a missing blanking panel) at 30 min.
+  Remediation raises the zone CRAH fan to 100 %.
+duration_s: 5400
+seed: 7
+faults:
+  - {type: rack_hotspot, target: rack07, start_s: 1800, severity: 0.65}
+actions:
+  - {at_s: 1920, asset: crah2, desired: {fan_pct: 100}}
+plot:
+  panels:
+    - title: Rack07 inlet vs neighbours
+      ylabel: °C
+      series: [zone2.rack07.t_in, zone2.rack06.t_in, zone2.rack08.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]
+    - title: Zone 2 CRAH fan
+      ylabel: "%"
+      series: [zone2.crah2.fan_pct]

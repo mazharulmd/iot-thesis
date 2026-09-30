@@ -1,0 +1,19 @@
+name: ups_battery_overheat
+description: >
+  A failing battery string in UPS 1 starts heating (about 1 K/min at half load) at 30 min.
+  High-risk remediation (after approval): move all load to UPS 2.
+duration_s: 7200
+seed: 8
+faults:
+  - {type: ups_battery_overheat, target: ups1, start_s: 1800, severity: 1.0}
+actions:
+  - {at_s: 2400, asset: ups1, desired: {load_share: 0.0}}
+plot:
+  panels:
+    - title: UPS battery temperature
+      ylabel: °C
+      series: [plant.ups1.t_batt, plant.ups2.t_batt]
+      limits: [{value: 35, label: battery alarm 35 °C}]
+    - title: UPS load
+      ylabel: kW
+      series: [plant.ups1.load_kw, plant.ups2.load_kw]

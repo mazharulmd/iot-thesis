@@ -1,0 +1,218 @@
+nohup: ignoring input
+.venv/bin/python -m experiments.batch --suite all --seeds 20 --workers 7
+1400 runs to do (0 already in /home/ubuntu/dc-selfheal/experiments/results/runs.csv), 7 workers; about 40 min
+  10/1400  e1 M1 crah_fan_failure 1011 : notified   ~69 min left
+  20/1400  e1 M1 crah_fan_failure 1019 : notified   ~51 min left
+  30/1400  e1 M2 crah_fan_failure 1010 : mitigated   ~51 min left
+  40/1400  e1 M2 crah_fan_failure 1020 : mitigated   ~51 min left
+  50/1400  e1 M3 crah_fan_failure 1009 : mitigated   ~54 min left
+  60/1400  e1 M3 crah_fan_failure 1019 : mitigated   ~53 min left
+  70/1400  e1 M1 sensor_stuck 1010 : missed   ~52 min left
+  80/1400  e1 M1 sensor_stuck 1020 : missed   ~50 min left
+  90/1400  e1 M2 sensor_stuck 1010 : missed   ~48 min left
+  100/1400  e1 M2 sensor_stuck 1020 : missed   ~47 min left
+  110/1400  e1 M3 sensor_stuck 1010 : mitigated   ~48 min left
+  120/1400  e1 M1 sensor_drift 1003 : notified   ~48 min left
+  130/1400  e1 M1 sensor_drift 1010 : notified   ~47 min left
+  140/1400  e1 M1 sensor_drift 1020 : notified   ~47 min left
+  150/1400  e1 M2 sensor_drift 1009 : mitigated   ~46 min left
+  160/1400  e1 M2 sensor_drift 1020 : mitigated   ~46 min left
+  170/1400  e1 M3 sensor_drift 1009 : mitigated   ~46 min left
+  180/1400  e1 M3 sensor_drift 1020 : mitigated   ~46 min left
+  190/1400  e1 M1 pump_degradation 1009 : missed   ~45 min left
+  200/1400  e1 M2 pump_degradation 1002 : missed   ~44 min left
+  210/1400  e1 M2 pump_degradation 1007 : missed   ~43 min left
+  220/1400  e1 M2 pump_degradation 1020 : missed   ~43 min left
+  230/1400  e1 M3 pump_degradation 1011 : mitigated   ~43 min left
+  240/1400  e1 M3 pump_degradation 1020 : mitigated   ~43 min left
+  250/1400  e1 M1 chw_supply_drift 1010 : notified   ~43 min left
+  260/1400  e1 M2 chw_supply_drift 1001 : mitigated   ~42 min left
+  270/1400  e1 M2 chw_supply_drift 1010 : mitigated   ~42 min left
+  280/1400  e1 M2 chw_supply_drift 1020 : mitigated   ~41 min left
+  290/1400  e1 M3 chw_supply_drift 1011 : mitigated   ~41 min left
+  300/1400  e1 M3 chw_supply_drift 1019 : mitigated   ~41 min left
+  310/1400  e1 M1 rack_hotspot 1012 : notified   ~41 min left
+  320/1400  e1 M1 rack_hotspot 1020 : notified   ~40 min left
+  330/1400  e1 M2 rack_hotspot 1011 : mitigated   ~40 min left
+  340/1400  e1 M2 rack_hotspot 1020 : mitigated   ~39 min left
+  350/1400  e1 M3 rack_hotspot 1010 : mitigated   ~39 min left
+  360/1400  e1 M1 ups_battery_overheat 1001 : notified   ~39 min left
+  370/1400  e1 M1 ups_battery_overheat 1010 : notified   ~38 min left
+  380/1400  e1 M1 ups_battery_overheat 1020 : notified   ~38 min left
+  390/1400  e1 M2 ups_battery_overheat 1010 : mitigated   ~37 min left
+  400/1400  e1 M2 ups_battery_overheat 1020 : mitigated   ~37 min left
+  410/1400  e1 M3 ups_battery_overheat 1009 : mitigated   ~37 min left
+  420/1400  e1 M3 ups_battery_overheat 1020 : mitigated   ~36 min left
+  430/1400  e1 M1 pdu_overload 1011 : notified   ~36 min left
+  440/1400  e1 M1 pdu_overload 1020 : notified   ~35 min left
+  450/1400  e1 M2 pdu_overload 1012 : mitigated   ~35 min left
+  460/1400  e1 M2 pdu_overload 1020 : mitigated   ~35 min left
+  470/1400  e1 M3 pdu_overload 1010 : mitigated   ~34 min left
+  480/1400  e1 M3 pdu_overload 1019 : mitigated   ~34 min left
+  490/1400  m1 M1 crah_fan_failure 1010 5: notified   ~34 min left
+  500/1400  m1 M1 sensor_stuck 1009 5: missed   ~33 min left
+  510/1400  m1 M1 sensor_drift 1009 5: notified   ~33 min left
+  520/1400  m1 M1 chw_supply_drift 1001 5: notified   ~32 min left
+  530/1400  m1 M1 chw_supply_drift 1010 5: notified   ~32 min left
+  540/1400  m1 M1 rack_hotspot 1009 5: notified   ~31 min left
+  550/1400  m1 M1 pdu_overload 1001 5: notified   ~31 min left
+  560/1400  m1 M1 pdu_overload 1010 5: notified   ~31 min left
+  570/1400  m1 M1 crah_fan_failure 1009 10: notified   ~30 min left
+  580/1400  m1 M1 sensor_stuck 1010 10: missed   ~30 min left
+  590/1400  m1 M1 sensor_drift 1010 10: notified   ~29 min left
+  600/1400  m1 M1 pump_degradation 1010 10: missed   ~29 min left
+  610/1400  m1 M1 chw_supply_drift 1010 10: notified   ~29 min left
+  620/1400  m1 M1 rack_hotspot 1009 10: notified   ~28 min left
+  630/1400  m1 M1 ups_battery_overheat 1009 10: notified   ~28 min left
+  640/1400  m1 M1 crah_fan_failure 1004 20: notified   ~27 min left
+  650/1400  m1 M1 crah_fan_failure 1008 20: notified   ~27 min left
+  660/1400  m1 M1 sensor_drift 1001 20: notified   ~27 min left
+  670/1400  m1 M1 pump_degradation 1003 20: missed   ~26 min left
+  680/1400  m1 M1 pump_degradation 1010 20: missed   ~26 min left
+  690/1400  m1 M1 chw_supply_drift 1009 20: notified   ~25 min left
+  700/1400  m1 M1 ups_battery_overheat 1002 20: notified   ~25 min left
+  710/1400  m1 M1 pdu_overload 1001 20: notified   ~25 min left
+  720/1400  m1 M1 crah_fan_failure 1004 30: notified   ~24 min left
+  730/1400  m1 M1 sensor_stuck 1001 30: missed   ~24 min left
+  740/1400  m1 M1 sensor_stuck 1009 30: missed   ~23 min left
+  750/1400  m1 M1 pump_degradation 1001 30: missed   ~23 min left
+  760/1400  m1 M1 pump_degradation 1010 30: missed   ~23 min left
+  770/1400  m1 M1 rack_hotspot 1001 30: notified   ~22 min left
+  780/1400  m1 M1 rack_hotspot 1009 30: notified   ~22 min left
+  790/1400  m1 M1 ups_battery_overheat 1010 30: notified   ~22 min left
+  800/1400  m1 M1 pdu_overload 1010 30: notified   ~21 min left
+  810/1400  e4_surge M1 load_surge 1009 : 0   ~21 min left
+  820/1400  e4_surge M1 load_surge 1020 : 0   ~20 min left
+  830/1400  e4_surge M2 load_surge 1009 : 0   ~20 min left
+  840/1400  e4_surge M2 load_surge 1020 : 0   ~20 min left
+  850/1400  e4_surge M3 load_surge 1009 : 0   ~19 min left
+  860/1400  e4_sensor M1 crah2_with_stuck_rack07 1002 : notified   ~19 min left
+  870/1400  e4_sensor M1 crah2_with_stuck_rack07 1010 : notified   ~19 min left
+  880/1400  e4_sensor M2 crah2_with_stuck_rack07 1010 : mitigated   ~18 min left
+  890/1400  e4_sensor M1 chw_with_drifting_rack12 1003 : notified   ~18 min left
+  900/1400  e4_sensor M1 chw_with_drifting_rack12 1010 : notified   ~18 min left
+  910/1400  e4_sensor M2 chw_with_drifting_rack12 1010 : mitigated   ~17 min left
+  920/1400  e4_drop M2 crah_fan_failure 1002 0.05: mitigated   ~17 min left
+  930/1400  e4_drop M2 crah_fan_failure 1010 0.05: mitigated   ~17 min left
+  940/1400  e4_drop M2 sensor_stuck 1001 0.05: missed   ~16 min left
+  950/1400  e4_drop M2 sensor_stuck 1010 0.05: missed   ~16 min left
+  960/1400  e4_drop M3 sensor_stuck 1008 0.05: mitigated   ~16 min left
+  970/1400  e4_drop M2 sensor_drift 1010 0.05: mitigated   ~15 min left
+  980/1400  e4_drop M3 sensor_drift 1010 0.05: mitigated   ~15 min left
+  990/1400  e4_drop M2 pump_degradation 1009 0.05: missed   ~15 min left
+  1000/1400  e4_drop M2 chw_supply_drift 1002 0.05: mitigated   ~14 min left
+  1010/1400  e4_drop M2 chw_supply_drift 1009 0.05: mitigated   ~14 min left
+  1020/1400  e4_drop M2 rack_hotspot 1001 0.05: mitigated   ~14 min left
+  1030/1400  e4_drop M2 rack_hotspot 1010 0.05: mitigated   ~13 min left
+  1040/1400  e4_drop M2 ups_battery_overheat 1001 0.05: mitigated   ~13 min left
+  1050/1400  e4_drop M2 ups_battery_overheat 1010 0.05: mitigated   ~12 min left
+  1060/1400  e4_drop M3 ups_battery_overheat 1008 0.05: mitigated   ~12 min left
+  1070/1400  e4_drop M2 pdu_overload 1010 0.05: mitigated   ~12 min left
+  1080/1400  e4_drop M3 pdu_overload 1009 0.05: mitigated   ~11 min left
+  1090/1400  e4_drop M2 crah_fan_failure 1010 0.1: mitigated   ~11 min left
+  1100/1400  e4_drop M2 sensor_stuck 1001 0.1: missed   ~11 min left
+  1110/1400  e4_drop M2 sensor_stuck 1009 0.1: missed   ~10 min left
+  1120/1400  e4_drop M3 sensor_stuck 1009 0.1: mitigated   ~10 min left
+  1130/1400  e4_drop M2 sensor_drift 1010 0.1: mitigated   ~10 min left
+  1140/1400  e4_drop M2 pump_degradation 1001 0.1: missed   ~9 min left
+  1150/1400  e4_drop M2 pump_degradation 1010 0.1: missed   ~9 min left
+  1160/1400  e4_drop M3 pump_degradation 1009 0.1: mitigated   ~9 min left
+  1170/1400  e4_drop M2 chw_supply_drift 1010 0.1: mitigated   ~8 min left
+  1180/1400  e4_drop M3 chw_supply_drift 1008 0.1: mitigated   ~8 min left
+  1190/1400  e4_drop M2 rack_hotspot 1010 0.1: mitigated   ~7 min left
+  1200/1400  e4_drop M2 ups_battery_overheat 1003 0.1: mitigated   ~7 min left
+  1210/1400  e4_drop M2 ups_battery_overheat 1010 0.1: mitigated   ~7 min left
+  1220/1400  e4_drop M2 pdu_overload 1002 0.1: mitigated   ~6 min left
+  1230/1400  e4_drop M2 pdu_overload 1010 0.1: mitigated   ~6 min left
+  1240/1400  e4_drop M3 pdu_overload 1010 0.1: mitigated   ~6 min left
+  1250/1400  e4_drop M2 crah_fan_failure 1009 0.2: mitigated   ~5 min left
+  1260/1400  e4_drop M3 crah_fan_failure 1009 0.2: mitigated   ~5 min left
+  1270/1400  e4_drop M3 sensor_stuck 1001 0.2: mitigated   ~5 min left
+  1280/1400  e4_drop M3 sensor_stuck 1009 0.2: mitigated   ~4 min left
+  1290/1400  e4_drop M3 sensor_drift 1002 0.2: mitigated   ~4 min left
+  1300/1400  e4_drop M3 sensor_drift 1010 0.2: mitigated   ~4 min left
+  1310/1400  e4_drop M2 pump_degradation 1010 0.2: missed   ~3 min left
+  1320/1400  e4_drop M3 pump_degradation 1010 0.2: mitigated   ~3 min left
+  1330/1400  e4_drop M2 chw_supply_drift 1010 0.2: mitigated   ~2 min left
+  1340/1400  e4_drop M3 chw_supply_drift 1008 0.2: mitigated   ~2 min left
+  1350/1400  e4_drop M2 rack_hotspot 1008 0.2: mitigated   ~2 min left
+  1360/1400  e4_drop M2 ups_battery_overheat 1002 0.2: mitigated   ~1 min left
+  1370/1400  e4_drop M2 ups_battery_overheat 1010 0.2: mitigated   ~1 min left
+  1380/1400  e4_drop M3 ups_battery_overheat 1010 0.2: mitigated   ~1 min left
+  1390/1400  e4_drop M2 pdu_overload 1010 0.2: mitigated   ~0 min left
+  1400/1400  e4_drop M3 pdu_overload 1010 0.2: mitigated   ~0 min left
+done in 48.6 min -> /home/ubuntu/dc-selfheal/experiments/results/runs.csv
+.venv/bin/python -m experiments.analysis
+1400 runs analysed -> /home/ubuntu/dc-selfheal/experiments/results
+
+## e1_summary.md
+| Fault | Mode | Runs | Detected | Recovered | Median MTTD (s) | Median time to action (min) | Median MTTR (min) [95 % CI] | Median exposure [95 % CI] | Wrong actions | Alerts / run |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| crah_fan_failure | M1 | 20 | 100 % | 100 % | 30 | 10.5 | 11.5 [10.2, 14.5] | 641.3 [486.4, 774.4] K·min | 0 | 1 |
+| crah_fan_failure | M2 | 20 | 100 % | 100 % | 30 | 0.5 | 1.0 [0.8, 1.7] | 17.0 [16.4, 19.2] K·min | 0 | 1 |
+| crah_fan_failure | M3 | 20 | 100 % | 100 % | 30 | 0.5 | 1.0 [0.8, 1.7] | 17.0 [16.4, 19.6] K·min | 0 | 1 |
+| rack_hotspot | M1 | 20 | 100 % | 100 % | 30 | 10.5 | 11.8 [9.6, 14.1] | 17.2 [13.4, 20.2] K·min | 0 | 1 |
+| rack_hotspot | M2 | 20 | 100 % | 100 % | 30 | 0.5 | 0.8 [0.8, 2.4] | 1.0 [0.9, 1.3] K·min | 0 | 1 |
+| rack_hotspot | M3 | 20 | 100 % | 100 % | 30 | 0.5 | 0.8 [0.8, 2.4] | 1.0 [0.9, 1.3] K·min | 0 | 1 |
+| chw_supply_drift | M1 | 20 | 100 % | 100 % | 290 | 14.9 | 15.0 [13.3, 18.1] | 55.1 [44.1, 73.6] K·min | 0 | 1 |
+| chw_supply_drift | M2 | 20 | 100 % | 100 % | 290 | 4.8 | 5.0 [4.8, 5.0] | 4.2 [3.8, 4.2] K·min | 0 | 1 |
+| chw_supply_drift | M3 | 20 | 100 % | 100 % | 90 | 1.5 | 1.7 [1.7, 1.8] | 0.0 [0.0, 0.0] K·min | 0 | 2 |
+| pump_degradation | M1 | 20 | 0 % | 0 % | – | – | > 45 [> 45, > 45] | 255.3 [255.3, 255.3] (L/s + mm/s)·min | 0 | 0 |
+| pump_degradation | M2 | 20 | 0 % | 0 % | – | – | > 45 [> 45, > 45] | 255.3 [255.3, 255.3] (L/s + mm/s)·min | 0 | 0 |
+| pump_degradation | M3 | 20 | 100 % | 100 % | 185 | 3.1 | 0.0 [0.0, 0.0] | 0.0 [0.0, 0.0] (L/s + mm/s)·min | 0 | 2 |
+| sensor_stuck | M1 | 20 | 0 % | 100 % | – | – | 0.0 [0.0, 0.0] | 0.0 [0.0, 0.0] K·min | 0 | 0 |
+| sensor_stuck | M2 | 20 | 0 % | 100 % | – | – | 0.0 [0.0, 0.0] | 0.0 [0.0, 0.0] K·min | 0 | 0 |
+| sensor_stuck | M3 | 20 | 100 % | 100 % | 70 | 1.2 | 0.0 [0.0, 0.0] | 0.0 [0.0, 0.0] K·min | 0 | 1 |
+| sensor_drift | M1 | 20 | 100 % | 100 % | 790 | 23.1 | 23.2 [21.8, 26.6] | 111.4 [96.7, 150.0] K·min | 0 | 1 |
+| sensor_drift | M2 | 20 | 100 % | 100 % | 790 | 13.2 | 13.3 [13.3, 13.3] | 31.7 [31.5, 31.7] K·min | 0 | 1 |
+| sensor_drift | M3 | 20 | 100 % | 100 % | 130 | 2.2 | 2.3 [2.2, 2.3] | 0.0 [0.0, 0.0] K·min | 0 | 2 |
+| ups_battery_overheat | M1 | 20 | 100 % | 85 % | 785 | 23.4 | 35.4 [32.0, 41.5] | 53.2 [40.4, 81.8] K·min | 0 | 1 |
+| ups_battery_overheat | M2 | 20 | 100 % | 85 % | 785 | 23.4 | 35.4 [32.0, 41.5] | 53.2 [40.4, 81.4] K·min | 0 | 2 |
+| ups_battery_overheat | M3 | 20 | 100 % | 100 % | 80 | 11.4 | 0.0 [0.0, 9.9] | 0.0 [0.0, 1.2] K·min | 0 | 3 |
+| pdu_overload | M1 | 20 | 100 % | 100 % | 40 | 10.7 | 10.8 [9.2, 14.1] | 72.7 [62.3, 94.9] %·min | 0 | 1 |
+| pdu_overload | M2 | 20 | 100 % | 100 % | 40 | 10.7 | 10.8 [9.2, 14.1] | 72.7 [62.3, 94.9] %·min | 0 | 2 |
+| pdu_overload | M3 | 20 | 100 % | 100 % | 30 | 10.5 | 10.7 [9.2, 13.9] | 71.5 [62.3, 93.7] %·min | 0 | 2 |
+
+
+## m1_sensitivity.md
+| Median human response (min) | Runs | Recovered | Median MTTR (min) [95 % CI] |
+| --- | --- | --- | --- |
+| 5 | 80 | 88 % | 10.3 [7.7, 13.7] |
+| 10 | 80 | 85 % | 15.7 [14.1, 20.2] |
+| 20 | 80 | 72 % | 28.4 [24.1, 35.3] |
+| 30 | 80 | 57 % | 42.1 [33.2, > 45] |
+| M2 (no human in the loop for low/medium risk) | – | – | 5.0 [4.0, 13.3] |
+| M3 (no human in the loop for low/medium risk) | – | – | 1.0 [0.8, 1.7] |
+
+
+## e4_summary.md
+### Load surges (normal operation, a zone swings from idle to full load)
+
+| Mode | Runs | False remediations | Commands sent | Alerts / run (median) |
+| --- | --- | --- | --- | --- |
+| M1 | 20 | 0 | 0 | 0 |
+| M2 | 20 | 0 | 0 | 0 |
+| M3 | 20 | 0 | 0 | 1 |
+
+### Physical fault while a rack sensor is already faulty
+
+| Combination | Mode | Runs | Detected | Recovered | Median MTTR (min) | Median exposure | Wrong actions |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| chw_with_drifting_rack12 | M1 | 10 | 100 % | 100 % | 16.7 | 65.1 | 0 |
+| chw_with_drifting_rack12 | M2 | 10 | 100 % | 100 % | 4.9 | 4.0 | 0 |
+| chw_with_drifting_rack12 | M3 | 10 | 100 % | 100 % | 1.7 | 0.0 | 0 |
+| crah2_with_stuck_rack07 | M1 | 10 | 100 % | 100 % | 12.7 | 641.6 | 0 |
+| crah2_with_stuck_rack07 | M2 | 10 | 100 % | 100 % | 1.0 | 16.7 | 0 |
+| crah2_with_stuck_rack07 | M3 | 10 | 100 % | 100 % | 1.0 | 16.7 | 0 |
+
+### Message loss between gateways and cloud (all 8 fault types)
+
+| Lost messages | Mode | Runs | Detected | Recovered | Median MTTD (s) | Median MTTR (min) | Wrong actions |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5% | M2 | 80 | 75 % | 85 % | 215 | 5.8 | 0 |
+| 5% | M3 | 80 | 100 % | 100 % | 90 | 1.7 | 0 |
+| 10% | M2 | 80 | 75 % | 85 % | 275 | 7.4 | 0 |
+| 10% | M3 | 80 | 100 % | 100 % | 100 | 1.8 | 0 |
+| 20% | M2 | 80 | 75 % | 82 % | 400 | 13.6 | 0 |
+| 20% | M3 | 80 | 100 % | 99 % | 180 | 3.4 | 0 |
+

@@ -1,0 +1,19 @@
+name: chw_supply_drift
+description: >
+  Chilled water supply temperature drifts 7 K above setpoint over 10 min (e.g. condenser fouling).
+  Remediation lowers the setpoint and starts assist capacity.
+duration_s: 5400
+seed: 6
+faults:
+  - {type: chw_supply_drift, target: chiller, start_s: 1800, severity: 7.0, ramp_s: 600}
+actions:
+  - {at_s: 2280, asset: chiller, desired: {sp: 11.0, assist: "on"}}
+plot:
+  panels:
+    - title: Chilled water supply vs setpoint
+      ylabel: °C
+      series: [plant.chiller.t_sup, plant.chiller.sp]
+    - title: Rack inlet temperatures (sample)
+      ylabel: °C
+      series: [zone1.rack01.t_in, zone2.rack07.t_in, zone3.rack12.t_in, zone4.rack18.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]

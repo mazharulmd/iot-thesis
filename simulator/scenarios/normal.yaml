@@ -1,0 +1,16 @@
+name: normal
+description: Healthy operation with GPU jobs starting and stopping. Used to train detectors.
+duration_s: 7200
+seed: 1
+plot:
+  panels:
+    - title: Rack inlet temperatures (sample)
+      ylabel: °C
+      series: [zone1.rack01.t_in, zone2.rack07.t_in, zone3.rack12.t_in, zone4.rack18.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]
+    - title: Zone IT power
+      ylabel: kW
+      series: [zone1.pdu1.p_kw, zone2.pdu2.p_kw, zone3.pdu3.p_kw, zone4.pdu4.p_kw]
+    - title: CRAH fan speed (auto control follows load)
+      ylabel: "%"
+      series: [zone1.crah1.fan_pct, zone2.crah2.fan_pct, zone3.crah3.fan_pct, zone4.crah4.fan_pct]

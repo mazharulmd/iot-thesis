@@ -1,0 +1,49 @@
+# Unit prices for the cost model (E3) and the load test's cost estimate, in USD.
+#
+# These are AWS on-demand list prices as published for us-east-1 (N. Virginia), because the
+# region-specific tables are not machine-readable from the development environment. Prices in
+# ap-south-1 (Mumbai) are the same for Lambda and similar (within about 15 %) for the others.
+# Before quoting numbers in the thesis, check each line in the AWS Pricing Calculator
+# (https://calculator.aws/) for ap-south-1 and edit this file; the measured bill from
+# `make aws-bill` (Cost Explorer) is the ground truth for the test-scale cost.
+as_of: "2026-09 (list prices; verify for ap-south-1)"
+region_note: "us-east-1 list prices unless stated"
+
+lambda:
+  gb_second: 0.0000166667        # x86, first 6 billion GB-s per month
+  requests_per_million: 0.20
+iot_core:
+  messages_per_million: 1.00     # first billion messages per month
+  connection_minutes_per_million: 0.08
+  shadow_operations_per_million: 1.25
+  rules_triggered_per_million: 0.15
+  actions_applied_per_million: 0.15
+dynamodb:
+  on_demand_write_units_per_million: 0.625
+  on_demand_read_units_per_million: 0.125
+  provisioned_wcu_hour: 0.00065
+  provisioned_rcu_hour: 0.00013
+  storage_gb_month: 0.25
+step_functions:
+  standard_transitions_per_thousand: 0.025
+eventbridge:
+  custom_events_per_million: 1.00
+sns:
+  email_per_100k: 2.00
+sqs:
+  requests_per_million: 0.40
+cloudwatch_logs:
+  ingest_per_gb: 0.50
+  storage_gb_month: 0.03
+
+# Always-free allowances (not the 12-month / credit-based offers), per month.
+always_free:
+  lambda_requests: 1000000
+  lambda_gb_seconds: 400000
+  dynamodb_provisioned_wcu: 25
+  dynamodb_provisioned_rcu: 25
+  dynamodb_storage_gb: 25
+  step_functions_transitions: 4000
+  sns_emails: 1000
+  sqs_requests: 1000000
+  cloudwatch_logs_gb: 5

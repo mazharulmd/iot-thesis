@@ -1,0 +1,16 @@
+{
+  "app": "python3 infra/app.py",
+  "watch": {
+    "include": [
+      "infra/**"
+    ],
+    "exclude": [
+      "**/__pycache__",
+      "tests"
+    ]
+  },
+  "context": {
+    "stage": "dev",
+    "@aws-cdk/core:defaultCrossStackReferences": "strong"
+  }
+}

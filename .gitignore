@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# CDK
+cdk.out/
+cdk.context.json
+
+# Local stack data
+.localstack/
+.mosquitto/
+
+# Secrets and device credentials - never commit these
+certs/
+*.pem
+*.key
+*.crt
+.env
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Simulator outputs
+runs/
+
+# Runtime state
+logs/
+.run/
+.bridge/
+
+# Build output and downloaded datasets
+build/
+detection/data/

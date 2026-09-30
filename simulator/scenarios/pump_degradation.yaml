@@ -1,0 +1,23 @@
+name: pump_degradation
+description: >
+  Chilled water pump 1 degrades over 30 min from 30 min (bearing wear). Flow falls, vibration and
+  current rise. Remediation starts pump 2, then stops pump 1.
+duration_s: 7200
+seed: 5
+faults:
+  - {type: pump_degradation, target: pump1, start_s: 1800, severity: 0.6, ramp_s: 1800}
+actions:
+  - {at_s: 3000, asset: pump2, desired: {status: "on"}}
+  - {at_s: 3030, asset: pump1, desired: {status: "off"}}
+plot:
+  panels:
+    - title: Pump vibration
+      ylabel: mm/s
+      series: [plant.pump1.vib_mms, plant.pump2.vib_mms]
+      limits: [{value: 7.1, label: ISO alarm 7.1 mm/s}]
+    - title: Chilled water flow
+      ylabel: L/s
+      series: [plant.pump1.flow_lps, plant.pump2.flow_lps]
+    - title: CRAH supply air temperature
+      ylabel: °C
+      series: [zone1.crah1.t_sup]

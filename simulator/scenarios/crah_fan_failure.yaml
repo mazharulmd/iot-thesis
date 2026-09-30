@@ -1,0 +1,23 @@
+name: crah_fan_failure
+description: >
+  CRAH unit 2 fails at 30 min. Remediation (2 min later): neighbours boost their fans,
+  the standby unit is started and assigned to zone 2, neighbours return to auto afterwards.
+duration_s: 5400
+seed: 2
+faults:
+  - {type: crah_fan_failure, target: crah2, start_s: 1800}
+actions:
+  - {at_s: 1920, asset: crah1, desired: {fan_pct: 100}}
+  - {at_s: 1920, asset: crah3, desired: {fan_pct: 100}}
+  - {at_s: 1920, asset: crah5, desired: {status: "on", zone: 2, fan_pct: 90}}
+  - {at_s: 2400, asset: crah1, desired: {fan_mode: auto}}
+  - {at_s: 2400, asset: crah3, desired: {fan_mode: auto}}
+plot:
+  panels:
+    - title: Zone 2 rack inlet temperatures
+      ylabel: °C
+      series: [zone2.rack06.t_in, zone2.rack07.t_in, zone2.rack08.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]
+    - title: Fan speeds
+      ylabel: "%"
+      series: [zone2.crah2.fan_pct, zone1.crah1.fan_pct, zone3.crah3.fan_pct, plant.crah5.fan_pct]

@@ -1,0 +1,17 @@
+name: sensor_drift
+description: The inlet sensor of rack12 drifts upward by 0.5 K/min from 30 min. Remediation flags it.
+duration_s: 5400
+seed: 4
+faults:
+  - {type: sensor_drift, target: zone3.rack12.t_in, start_s: 1800, severity: 0.5}
+actions:
+  - {at_s: 2700, asset: rack12, desired: {sensor_flag: t_in}}
+plot:
+  panels:
+    - title: Rack12 inlet (drifting sensor) vs neighbours
+      ylabel: °C
+      series: [zone3.rack12.t_in, zone3.rack11.t_in, zone3.rack13.t_in]
+      limits: [{value: 27, label: ASHRAE max 27 °C}]
+    - title: Rack12 outlet (true air unchanged)
+      ylabel: °C
+      series: [zone3.rack12.t_out]

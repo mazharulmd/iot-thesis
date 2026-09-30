@@ -1,0 +1,6 @@
+name: e2e_ups_overheat
+description: Short live scenario for `make e2e-approval` - UPS 1 battery starts overheating 5 simulated minutes in. No scripted actions.
+duration_s: 0
+seed: 22
+faults:
+  - {type: ups_battery_overheat, target: ups1, start_s: 300, severity: 1.0}

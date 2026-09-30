@@ -1,0 +1,6 @@
+name: e2e_crah_failure
+description: Short live scenario for `make e2e` - CRAH unit 2 fails 5 simulated minutes in. No scripted actions.
+duration_s: 0
+seed: 21
+faults:
+  - {type: crah_fan_failure, target: crah2, start_s: 300}
