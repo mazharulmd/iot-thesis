@@ -2,14 +2,28 @@
 # Commit the project (code, docs, thesis, results) and push it to GitHub, refusing to go on if
 # anything secret is staged.
 #
-#   scripts/git-publish.sh https://github.com/<user>/<repo>.git ["commit message"]
+#   scripts/git-publish.sh "commit message"                                  (usual case)
+#   scripts/git-publish.sh https://github.com/<user>/<repo>.git ["message"]   (first push only)
 #
-# Safe to run again later: it stages the changes, checks them, commits and pushes.
+# Safe to run again later: it stages the changes, checks them, commits, pulls and pushes.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-REMOTE="${1:-}"
-MSG="${2:-Update project and results}"
+REMOTE=""
+MSG="Update project and results"
+case "${1:-}" in
+  https://*|http://*|git@*|ssh://*) REMOTE="$1"; MSG="${2:-$MSG}" ;;
+  "") ;;
+  *) MSG="$1" ;;
+esac
+# Repair an origin that is not a repository URL (an older version of this script could set one).
+if git remote get-url origin >/dev/null 2>&1; then
+  case "$(git remote get-url origin)" in
+    https://*|http://*|git@*|ssh://*) ;;
+    *) echo "origin was '$(git remote get-url origin)', which is not a URL; set it with:"
+       echo "  git remote set-url origin https://github.com/<user>/<repo>.git"; exit 1 ;;
+  esac
+fi
 
 if [ ! -d .git ]; then
   git init -q -b main
