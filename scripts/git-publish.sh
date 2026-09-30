@@ -58,6 +58,10 @@ if [ -n "$REMOTE" ]; then
 fi
 if git remote get-url origin >/dev/null 2>&1; then
   git branch -M main
+  # Bring in changes pushed from elsewhere (e.g. code updates) before pushing results.
+  if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+    git pull --rebase origin main
+  fi
   git push -u origin main
 else
   echo "No remote yet. Run again with the repository URL to push."

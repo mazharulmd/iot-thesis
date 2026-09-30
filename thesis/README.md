@@ -7,10 +7,19 @@ Infrastructure** (Master's thesis, Mazharul Islam Tusar).
 | --- | --- |
 | [proposal.md](proposal.md) | The approved research proposal (text, diffable) |
 | [proposal.pdf](proposal.pdf) · [proposal.docx](proposal.docx) | The same proposal as PDF and Word |
+| [methodology.md](methodology.md) | Methodology and evaluation criteria: DSR design, hypotheses H1–H8 with pass criteria, protocol, validity (also a live doc in Claude) |
 | This file | Where each research question and chapter gets its evidence, what changed since the proposal, and what is left |
 
-The proposal is also kept as a live document in Claude (Docs artifact); edits there should be
-re-exported into this folder so the repository stays the single source for the thesis.
+The proposal and the methodology are also kept as live documents in Claude; edits there are
+re-exported into this folder, so this repository is the single source for the whole thesis.
+
+## Keeping everything in GitHub
+
+- **Code, docs and thesis files** are committed to `main` as each step is built.
+- **On the server**, start every session with `git pull`, and after a run commit the results with
+  `scripts/git-publish.sh "what was run"` (it checks for secrets, pulls, then pushes).
+- **Never committed:** `.env`, `certs/`, LocalStack data, simulator run folders and the SKAB download
+  (see `.gitignore`).
 
 ## Progress
 
