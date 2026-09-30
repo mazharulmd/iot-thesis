@@ -1,6 +1,6 @@
 # dc-selfheal
 
-A serverless AWS IoT framework for automated anomaly detection and remediation in data center infrastructure (Master's thesis project).
+A serverless AWS IoT framework for automated anomaly detection and remediation in data center infrastructure (Bachelor's thesis project, Savonia University of Applied Sciences).
 
 ## Repository layout
 

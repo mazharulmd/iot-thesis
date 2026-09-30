@@ -8,8 +8,8 @@ Sep 24, 2026 · @Mazharul Islam Tusar
 | --- | --- |
 | Working title | A Serverless AWS IoT Framework for Automated Anomaly Detection and Remediation in Data Center Infrastructure |
 | Short title | Self-healing data center facilities on AWS IoT |
-| Degree | Master of Science (Technology), 30 ECTS — *to be confirmed* |
-| University / programme | *To be added* |
+| Degree | Bachelor's degree |
+| University / programme | Savonia University of Applied Sciences; programme *to be added* |
 | Supervisor / advisor | *To be added* |
 | Duration | 6 months full-time |
 | Keywords | Data center, IoT, AWS IoT Core, serverless, event-driven automation, anomaly detection, auto-remediation, self-healing, digital twin |
