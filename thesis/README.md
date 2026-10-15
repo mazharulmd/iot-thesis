@@ -33,7 +33,8 @@ re-exported into this folder, so this repository is the single source for the wh
 | 5 | Remediation: playbooks, one generic state machine, device-shadow commands, verification, rollback | Done |
 | 6 | Guardrails: risk tiers, approval with one-time links, recheck, circuit breaker, rate limit | Done |
 | 7 | Experiments E1, M1 sensitivity, E4 (1,400 runs on the OCI server) | Done |
-| 8 | Real AWS in ap-south-1: end-to-end check, E2 load test, E3 cost | Built; to run ([docs/aws.md](../docs/aws.md)) |
+| 7.1 | E5 severity sweep (720 runs) and CloudWatch dashboard | Built; E5 to run (`make e5`) |
+| 8 | Real AWS in ap-south-1: end-to-end check, E2 load test, E3 cost, dashboard | Built; to run ([docs/aws.md](../docs/aws.md)) |
 | 9 | Thesis writing, figures, supervisor review | To do |
 
 ## Research questions → evidence
@@ -42,7 +43,7 @@ re-exported into this folder, so this repository is the single source for the wh
 | --- | --- |
 | **RQ1** How can a serverless AWS architecture turn IoT telemetry into safe, automated remediation? | Architecture as code in `infra/stacks/` (Foundation, Data, Detection, Remediation, Iot); design notes in [docs/pipeline.md](../docs/pipeline.md), [docs/remediation.md](../docs/remediation.md), [docs/guardrails.md](../docs/guardrails.md); end-to-end checks `tools/e2e_check.py`, `tools/e2e_approval.py` (LocalStack, then real AWS) |
 | **RQ2** ML vs static thresholds: accuracy and time to detect | [docs/detection.md](../docs/detection.md); `detection/results/offline_summary.md`, `skab_summary.md`; E1 detection rate and MTTD in `experiments/results/e1_summary.md` (M2 vs M3) |
-| **RQ3** Recovery time vs alert-only response, latency, scalability, cost | E1 and M1 sensitivity in [docs/experiments.md](../docs/experiments.md) and `experiments/results/`; latency `tools/latency.py`; E2 `experiments/results/e2_summary.md`; E3 `e3_cost.md`, `e3_measured.md` (after Step 8) |
+| **RQ3** Recovery time vs alert-only response, latency, scalability, cost | E1, M1 sensitivity and E5 severity in [docs/experiments.md](../docs/experiments.md) and `experiments/results/`; latency `tools/latency.py`; E2 `experiments/results/e2_summary.md`; E3 `e3_cost.md`, `e3_measured.md` (after Step 8) |
 
 ## Chapter plan → material
 
@@ -75,7 +76,7 @@ re-exported into this folder, so this repository is the single source for the wh
 
 ```bash
 make test                 # unit tests
-make experiments          # E1, M1 sensitivity, E4 (offline, ~50 min on 7 workers) -> experiments/results/
+make experiments          # E1, M1 sensitivity, E4, E5 (offline, ~70 min on 7 workers) -> experiments/results/
 make analysis             # tables, statistical tests, figures from runs.csv
 make aws-deploy && make aws-check && make aws-loadtest && make aws-cost && make aws-destroy   # Step 8
 ```

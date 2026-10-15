@@ -125,3 +125,36 @@ def test_loadgen_summary_and_extrapolation():
     text = summary([row], 10)
     assert "| 2,000 | 200.0 | 199.5 | 0.1 % | 150 | 300 | 500 |" in text
     assert "needs about 50 concurrent executions" in text and "this account allows 10" in text
+
+
+def test_monitoring_dashboard_covers_the_pipeline(tmp_path):
+    from stacks.monitoring_stack import MonitoringStack
+    from stacks.remediation_stack import RemediationStack
+
+    dirs = {}
+    for name in ("det", "rem", "appr"):
+        dirs[name] = tmp_path / name
+        dirs[name].mkdir()
+        (dirs[name] / "handler.py").write_text("def handler(e, c):\n    return e\n")
+    app = cdk.App()
+    found = FoundationStack(app, "F", stage="t")
+    data = DataStack(app, "D", stage="t", on_demand=True)
+    det = DetectionStack(app, "Det", stage="t", telemetry=data.telemetry, ingest_stats=data.ingest_stats,
+                         detections=data.detections, code_dir=dirs["det"])
+    rem = RemediationStack(app, "R", stage="t", telemetry=data.telemetry, incidents=data.incidents, locks=data.locks,
+                           guardrails=data.guardrails, bus=det.bus, alerts=found.alerts_topic, shadow_transport="iot",
+                           code_dir=dirs["rem"], approval_code_dir=dirs["appr"])
+    mon = MonitoringStack(app, "M", stage="t", detector=det.function, remediation=rem.function,
+                          approval=rem.approval, state_machine=rem.state_machine, telemetry=data.telemetry,
+                          ingest_stats=data.ingest_stats, alerts=found.alerts_topic)
+    t = Template.from_stack(mon)
+    t.resource_count_is("AWS::CloudWatch::Dashboard", 1)
+    t.has_resource_properties("AWS::CloudWatch::Dashboard", {"DashboardName": "dc-selfheal-t"})
+    body = json.dumps(t.find_resources("AWS::CloudWatch::Dashboard"))
+    for metric in ("PublishIn.Success", "TopicMatch", "dc_selfheal_t_telemetry", "Invocations", "Throttles",
+                   "ConcurrentExecutions", "ConsumedWriteCapacityUnits", "ExecutionsStarted", "ExecutionsFailed",
+                   "NumberOfMessagesPublished"):
+        assert metric in body, metric
+    # inside CloudWatch's always-free allowance: at most 50 metrics per dashboard
+    assert 20 <= body.count('\\"AWS/') <= 50
+    t.has_output("DashboardUrl", Match.any_value())

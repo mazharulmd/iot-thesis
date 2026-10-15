@@ -50,7 +50,7 @@ ALERT_EMAIL=your.real@address        # alerts and approval requests arrive here
 ```bash
 make aws-whoami          # must show YOUR account id (not 000000000000)
 make aws-bootstrap       # once per account/region (CDK's S3 bucket and roles)
-make aws-deploy          # about 5 min; 5 stacks incl. DcSelfheal-dev-Iot
+make aws-deploy          # about 5 min; 6 stacks incl. Iot and Monitoring; prints the dashboard link
 #   -> confirm the "AWS Notification - Subscription Confirmation" email
 make aws-devices         # certificate for the gateways -> certs/ (never commit or share)
 make aws-check           # E2E: CRAH failure fixed via IoT Core shadows + approval via the public URL
@@ -68,6 +68,15 @@ A day or two later (Cost Explorer lags about a day):
 1. Billing console → *Cost allocation tags* → activate the user-defined tag **Project**
    (every resource is tagged `Project=dc-selfheal`).
 2. `make aws-bill START=<first day of the AWS work>` → `experiments/results/e3_measured.md`.
+
+## Dashboard
+
+`make aws-deploy` prints a link to the CloudWatch dashboard `dc-selfheal-dev` (also in the
+CloudWatch console under *Dashboards*). Keep it open during `aws-check` and the load test. It
+shows, per minute: messages into IoT Core and rule matches, rule failures and throttling, detector
+invocations, errors, throttles, duration (average and p95) and concurrency, DynamoDB write
+capacity, playbook executions, remediation errors and alerts sent. A screenshot of it during the
+2,000-gateway level is a good figure for the thesis. One dashboard is free (3 per month are).
 
 ## What the checks show
 

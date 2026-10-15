@@ -5,7 +5,8 @@ Usage:
     cdk deploy --all -c stage=dev -c alert_email=you@example.com [-c ddb_billing=on_demand]   (real AWS)
     cdklocal deploy --all -c stage=local                                                      (LocalStack)
 
-On real AWS an IoT Core stack (device policy, things, telemetry rule) replaces the local bridge.
+On real AWS an IoT Core stack (device policy, things, telemetry rule) replaces the local bridge,
+and a monitoring stack adds one CloudWatch dashboard for the whole pipeline.
 """
 import os
 
@@ -15,6 +16,7 @@ from stacks.data_stack import DataStack
 from stacks.foundation_stack import FoundationStack
 from stacks.detection_stack import DetectionStack
 from stacks.iot_stack import IotStack
+from stacks.monitoring_stack import MonitoringStack
 from stacks.remediation_stack import RemediationStack
 
 app = cdk.App()
@@ -57,7 +59,7 @@ detection = DetectionStack(
     description="dc-selfheal: detector Lambda and anomaly event bus (Step 4)",
 )
 
-RemediationStack(
+remediation = RemediationStack(
     app,
     f"DcSelfheal-{stage}-Remediation",
     stage=stage,
@@ -89,6 +91,20 @@ if stage != "local":                # LocalStack's free plan has no IoT Core: th
         errors_bucket=foundation.artifacts_bucket,
         env=env,
         description="dc-selfheal: IoT Core device policy, things and telemetry rule (Step 8)",
+    )
+    MonitoringStack(
+        app,
+        f"DcSelfheal-{stage}-Monitoring",
+        stage=stage,
+        detector=detection.function,
+        remediation=remediation.function,
+        approval=remediation.approval,
+        state_machine=remediation.state_machine,
+        telemetry=data.telemetry,
+        ingest_stats=data.ingest_stats,
+        alerts=foundation.alerts_topic,
+        env=env,
+        description="dc-selfheal: CloudWatch dashboard for the pipeline (Step 8)",
     )
 
 # Tags on every resource, used by Cost Explorer for per-experiment cost (E3).

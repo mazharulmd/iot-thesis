@@ -7,8 +7,9 @@ Writes to experiments/results/:
   e1_tests.md          Mann-Whitney U: M1 vs M2 (effect of automation), M2 vs M3 (effect of ML detection)
   m1_sensitivity.md    alert-only recovery time vs the assumed human response time
   e4_summary.md        load surges (false actions), combined faults, message loss
+  e5_summary.md        severity sweep: recovery per fault, severity level and mode, with tests
   live_vs_offline.md   the live fidelity runs (tools/live_experiment.py) next to the same offline runs
-  fig_e1_mttr.png, fig_e1_exposure.png, fig_m1_sensitivity.png, fig_e4_drop.png
+  fig_e1_mttr.png, fig_e1_exposure.png, fig_m1_sensitivity.png, fig_e4_drop.png, fig_e5_severity.png
 
 Statistics (as in the proposal): medians with 95 % bootstrap confidence intervals (2,000
 resamples, percentile method), two-sided Mann-Whitney U tests with Holm correction across the
@@ -193,6 +194,61 @@ def e4_summary(df: pd.DataFrame) -> str:
     return "\n".join(out)
 
 
+def e5_summary(df: pd.DataFrame) -> str:
+    """Severity sweep. Tests compare modes within each fault x level cell, Holm-corrected across the
+    24 cells; 'ranking holds' means no mode is significantly worse than the one before it."""
+    from experiments.batch import E5_LEVELS
+    cells, tests = [], {}
+    for a, b in (("M1", "M2"), ("M2", "M3")):
+        ps, keys = [], []
+        for f in FAULTS:
+            for level, _, _ in E5_LEVELS[f]:
+                x = df[(df.fault == f) & (df.param == level) & (df["mode"] == a)]["mttr_c"]
+                y = df[(df.fault == f) & (df.param == level) & (df["mode"] == b)]["mttr_c"]
+                if len(x) and len(y):
+                    ps.append(mwu(x, y)[0])
+                    keys.append((f, level))
+        for k, p in zip(keys, holm(ps)):
+            tests[(a, b) + k] = p
+    lines = ["| Fault | Level | Severity | Mode | Runs | Detected | Recovered | Median MTTD (s) "
+             "| Median MTTR (min) [95 % CI] | Median exposure | Wrong actions |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    verdict = ["| Fault | Level | Severity | M1 → M2 (automation) | M2 → M3 (ML detection) |",
+               "| --- | --- | --- | --- | --- |"]
+    worse = 0
+    for f in FAULTS:
+        for level, desc, _ in E5_LEVELS[f]:
+            meds = {}
+            for m in MODES:
+                d = df[(df.fault == f) & (df.param == level) & (df["mode"] == m)]
+                if d.empty:
+                    continue
+                meds[m] = d["mttr_c"].median()
+                mttd = d["mttd_s"].dropna()
+                cells = [f, level, desc, m, str(len(d)), pct(d.detected), pct(d.recovered),
+                         f"{np.median(mttd):.0f}" if len(mttd) else "–",
+                         fmt_ci(*median_ci(d["mttr_c"]), f=fmt_min),
+                         f"{d.exposure.median():.1f} {UNITS[f]}", str(int(d.wrong_actions.sum()))]
+                lines.append("| " + " | ".join(cells) + " |")
+            row = []
+            for a, b in (("M1", "M2"), ("M2", "M3")):
+                p = tests.get((a, b, f, level))
+                if p is None or a not in meds or b not in meds:
+                    row.append("–")
+                elif p >= 0.05:
+                    row.append(f"no difference ({fmt_min(meds[a])} vs {fmt_min(meds[b])} min)")
+                elif meds[b] < meds[a]:
+                    row.append(f"**{b} faster** ({fmt_min(meds[a])} → {fmt_min(meds[b])} min, p = {p:.1g})")
+                else:
+                    worse += 1
+                    row.append(f"{b} SLOWER ({fmt_min(meds[a])} → {fmt_min(meds[b])} min, p = {p:.1g})")
+            verdict.append(f"| {f} | {level} | {desc} | {row[0]} | {row[1]} |")
+    head = (f"Ranking check: the later mode is significantly slower in **{worse}** of "
+            f"{2 * sum(len(v) for v in E5_LEVELS.values())} comparisons (Mann–Whitney U, Holm-corrected across the "
+            "24 fault × level cells per comparison; MTTR censored at 45 min).\n")
+    return head + "\n" + "\n".join(verdict) + "\n\n### All cells\n\n" + "\n".join(lines)
+
+
 def live_vs_offline(live: pd.DataFrame, e1: pd.DataFrame, window_s: float = 1800.0) -> str:
     """Pairs each live run with the offline run of the same fault, mode and seed. The live window is
     30 minutes after the fault, so offline recovery later than that counts as not recovered."""
@@ -374,6 +430,65 @@ def fig_drop(df: pd.DataFrame, e1: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
+E5_AXIS = {   # short tick labels per level (L1, L2, L3) and what they measure; E1's level is starred
+    "crah_fan_failure": ("racks busy when the CRAH fails", ["40 %", "80 %*", "100 %"]),
+    "rack_hotspot": ("local airflow lost", ["50 %", "65 %*", "80 %"]),
+    "chw_supply_drift": ("supply drift over 10 min", ["+4 K", "+7 K*", "+10 K"]),
+    "pump_degradation": ("pump health lost over 30 min", ["40 %", "60 %*", "80 %"]),
+    "sensor_stuck": ("reading frozen below the truth by", ["0 K*", "3 K", "6 K"]),
+    "sensor_drift": ("drift rate", ["0.25 K/min", "0.5 K/min*", "1 K/min"]),
+    "ups_battery_overheat": ("battery heating at half load", ["0.5 K/min", "1 K/min*", "2 K/min"]),
+    "pdu_overload": ("rack power vs rating", ["106 %", "112 %*", "118 %"]),
+}
+
+
+def fig_severity(df: pd.DataFrame, path: Path) -> None:
+    """Small multiples: one panel per fault, x = severity level, y = median time to recover (shared
+    0-45 min scale, so panels compare directly), whiskers = 95 % CI."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from experiments.batch import E5_LEVELS
+
+    fig, axes = plt.subplots(4, 2, figsize=(8.0, 9.6), facecolor=SURFACE, sharey=True)
+    nudge = {"M1": -0.12, "M2": 0.0, "M3": 0.12}
+    for ax, f in zip(axes.flat, FAULTS):
+        levels = E5_LEVELS[f]
+        for m in MODES:
+            xs, ys = [], []
+            for i, (level, _, _) in enumerate(levels):
+                med, lo, hi = median_ci(df[(df.fault == f) & (df.param == level) & (df["mode"] == m)]["mttr_c"])
+                if med != med:
+                    continue
+                x = i + nudge[m]
+                ax.plot([x, x], [lo / 60, hi / 60], color=COLORS[m], linewidth=2, solid_capstyle="round")
+                xs.append(x)
+                ys.append(med / 60)
+            ax.plot(xs, ys, color=COLORS[m], linewidth=2, marker=MARKERS[m], markersize=8,
+                    markeredgecolor=SURFACE, markeredgewidth=1.5, label=MODE_NAMES[m])
+        what, ticks = E5_AXIS[f]
+        ax.set_xticks(range(len(levels)))
+        ax.set_xticklabels(ticks, fontsize=8, color=INK2)
+        ax.set_xlim(-0.4, len(levels) - 0.6)
+        ax.set_ylim(-1.5, 48)
+        ax.axhline(45, color=INK2, linewidth=1, linestyle=(0, (2, 3)))
+        _style(ax)
+        ax.grid(axis="x", visible=False)
+        ax.grid(axis="y", color=GRID, linewidth=0.8)
+        ax.set_title(f.replace("_", " "), loc="left", color=INK, fontsize=9.5)
+        ax.set_xlabel(what, color=INK2, fontsize=8)
+    for ax in axes[:, 0]:
+        ax.set_ylabel("Median time to recover (min)", color=INK2, fontsize=8)
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper left", bbox_to_anchor=(0.02, 0.955), ncol=3, frameon=False,
+               fontsize=8.5, labelcolor=INK2)
+    fig.suptitle("Recovery across fault severity (median, 95 % CI; 45 = not recovered within 45 min; * = E1 level)",
+                 x=0.02, y=0.99, ha="left", color=INK, fontsize=10.5)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.savefig(path, dpi=200, facecolor=SURFACE)
+    plt.close(fig)
+
+
 def main() -> None:
     import argparse
     global RESULTS
@@ -402,12 +517,17 @@ def main() -> None:
         (RESULTS / "e4_summary.md").write_text(e4_summary(df) + "\n")
         if len(e4[e4.suite == "e4_drop"]) and len(e1):
             fig_drop(e4[e4.suite == "e4_drop"], e1, RESULTS / "fig_e4_drop.png")
+    e5 = df[df.suite == "e5"].copy()
+    if len(e5):
+        e5["param"] = e5["param"].astype(str)
+        (RESULTS / "e5_summary.md").write_text(e5_summary(e5) + "\n")
+        fig_severity(e5, RESULTS / "fig_e5_severity.png")
     live_path = args.runs.parent / "live_runs.csv"
     if live_path.exists() and len(e1):
         live = load(live_path)
         (RESULTS / "live_vs_offline.md").write_text(live_vs_offline(live, e1) + "\n")
     print(f"{len(df)} runs analysed -> {RESULTS}")
-    for name in ("e1_summary.md", "m1_sensitivity.md", "e4_summary.md", "live_vs_offline.md"):
+    for name in ("e1_summary.md", "m1_sensitivity.md", "e4_summary.md", "e5_summary.md", "live_vs_offline.md"):
         if (RESULTS / name).exists():
             print(f"\n## {name}\n" + (RESULTS / name).read_text())
 

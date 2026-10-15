@@ -27,6 +27,7 @@ class Fault:
     severity: float = 1.0
     ramp_s: float = 0.0          # 0 = step change
     duration_s: float = 0.0      # 0 = until the end of the run (used by normal events)
+    offset: float = 0.0          # sensor_stuck only: the reading freezes this far from the true value
 
     def __post_init__(self) -> None:
         if self.type not in FAULT_CATALOG and self.type not in NORMAL_EVENTS:
@@ -60,6 +61,7 @@ class Fault:
             "severity": self.severity,
             "ramp_s": self.ramp_s,
             "duration_s": self.duration_s,
+            "offset": self.offset,
             "normal_event": self.is_normal_event,
             "risk": risk,
             "expected_playbook": playbook,
@@ -158,7 +160,7 @@ class SensorLayer:
             if f.target != key or t < f.start_s:
                 continue
             if f.type == "sensor_stuck":
-                value = self.stuck_value.setdefault(key, value)
+                value = self.stuck_value.setdefault(key, value + f.offset)
             elif f.type == "sensor_drift":
                 minutes = (t - f.start_s) / 60.0
                 value += min(15.0, f.severity * minutes)   # severity = K/min, capped at +15

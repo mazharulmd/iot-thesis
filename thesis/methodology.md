@@ -57,7 +57,7 @@ Each hypothesis tests one requirement from the problem statement; the target is 
 
 ## Evaluation protocol
 
-Six evaluations cover the hypotheses; the first four are done, the last two run in Step 8.
+Seven evaluations cover the hypotheses: four are done, E5 is built and runs offline, and the last two run in Step 8.
 
 | Evaluation | Tests | Environment | Design | Runs | Status |
 | --- | --- | --- | --- | --- | --- |
@@ -65,6 +65,7 @@ Six evaluations cover the hypotheses; the first four are done, the last two run 
 | SKAB validation | H4 | Real pump testbed data | Published train/test split, 34 test experiments | 5 detectors | Done |
 | E1 fault response | H1, H2, H5 | Offline closed loop (real Lambda code, mocked AWS) | 8 faults × 3 modes × 20 seeds, paired by seed | 480 | Done |
 | M1 sensitivity and E4 robustness | H1, H3, H5 | Offline closed loop | Human median 5–30 min; load surges; faulty sensors; 5–20 % message loss | 920 | Done |
+| E5 severity sweep | H1, H2, H5 | Offline closed loop | 8 faults × 3 severity levels × 3 modes × 10 seeds; one level per fault repeats E1 | 720 | Built; runs on the server |
 | Live check and E2 load test | H5, H6, H7 | Real AWS, ap-south-1 | End-to-end fault and approval check; 50, 500, 2,000 gateways × 30 min | 1 + 3 | Step 8 |
 | E3 cost | H8 | Real AWS bill + cost model | Measured usage per message → 1, 10, 100 halls | – | Step 8 |
 
@@ -90,7 +91,7 @@ The largest threat is that the plant is simulated; the thesis must say so plainl
 
 | Threat | Type | How it is handled |
 | --- | --- | --- |
-| Simulated plant: idealised faults, one severity and one target per fault type | External | Reduced-order model with an energy-balance test; a source cited for each key parameter in chapter 4; claims framed as "in a simulated hall"; optional severity sweep (next section) |
+| Simulated plant: idealised faults, one severity and one target per fault type | External | Reduced-order model with an energy-balance test; a source cited for each key parameter in chapter 4; claims framed as "in a simulated hall"; E5 severity sweep (3 levels per fault) |
 | Detectors trained and tested on the same simulator | Construct | Training on normal data only, disjoint seeds, and SKAB as an independent real-data check |
 | ML false alarms on SKAB higher than thresholds | Conclusion | Reported openly; hybrid rules and 3-window debouncing keep automated false actions at 0 in the simulated hall |
 | Assumed human response in M1 | Internal | Sensitivity over medians of 5–30 min; conclusion unchanged at 5 min |
@@ -105,8 +106,8 @@ The largest threat is that the plant is simulated; the thesis must say so plainl
 Step 8 is the only item that decides whether the target is met; the others strengthen the thesis against the threats above.
 
 - [ ] **Step 8 on real AWS** (decides H6–H8): end-to-end check, E2 load test at 50 / 500 / 2,000 gateways, E3 cost model and measured bill. Set a $10 AWS budget alert first.
-- [ ] **CloudWatch dashboard** (in the proposal's scope, not yet built): one dashboard for telemetry rate, detector latency, incidents and throttles, added to the CDK app before Step 8 so the load test is visible live. Free within the 3-dashboard allowance.
-- [ ] **Severity sweep** (external validity, optional, offline): each fault at 3 severities × 3 modes × 10 seeds = 720 runs, about 25 min on the server. Shows whether the M1/M2/M3 ranking holds for milder and harsher faults.
+- [ ] **CloudWatch dashboard** (in the proposal's scope): built as a sixth CDK stack with 22 metrics from IoT Core to the alerts; it deploys with Step 8 so the load test is visible live. Free within the 3-dashboard allowance.
+- [ ] **Severity sweep** (external validity): built as E5, each fault at 3 severities × 3 modes × 10 seeds = 720 runs; run with \`make e5\` on the server (about 20 min). Shows whether the M1/M2/M3 ranking holds for milder and harsher faults.
 - [ ] **Simulator parameter sources:** cite a published value or standard for each key parameter in `simulator/config.py` (ASHRAE limits, CRAH airflow per kW, pump vibration limits, battery thermal limits).
 - [ ] **Literature check:** verify the gap table (proposal §4.4) in Scopus or IEEE Xplore, as the proposal requires.
 - [ ] **Write the thesis** using this document as chapter 5 (method) and the hypothesis table as the backbone of chapter 6 (results).

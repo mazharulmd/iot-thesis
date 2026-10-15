@@ -5,7 +5,7 @@ import os
 
 import boto3
 
-STACKS = ("Foundation", "Data", "Detection", "Remediation", "Iot")
+STACKS = ("Foundation", "Data", "Detection", "Remediation", "Iot", "Monitoring")
 
 
 def session(stage: str) -> boto3.Session:

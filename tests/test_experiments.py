@@ -80,3 +80,45 @@ def test_statistics_helpers():
     p, r = mwu([10, 11, 12, 13, 14, 15], [1, 2, 3, 4, 5, 6])
     assert p < 0.01 and r == pytest.approx(1.0)
     assert mwu([5, 5], [5, 5]) == (1.0, 0.0)
+
+
+def test_e5_severity_sweep_specs_and_levels():
+    from experiments.batch import E5_LEVELS, FAULTS, apply_level, scenario, specs
+    from experiments.closed_loop import fault_scenario
+
+    runs = specs("e5", 10)
+    assert len(runs) == 8 * 3 * 3 * 10 == 720
+    assert set(E5_LEVELS) == set(FAULTS) and all(len(v) == 3 for v in E5_LEVELS.values())
+    for f, levels in E5_LEVELS.items():
+        # exactly one level is the E1 fault, unchanged
+        assert sum(1 for _, desc, changes in levels if not changes and "(E1)" in desc) == 1, f
+        base = fault_scenario(f, 600.0, 2700.0, 1001)
+        for level, _, changes in levels:
+            scn = scenario({"suite": "e5", "fault": f, "seed": 1001, "param": level})
+            assert scn.seed == 1001 and scn.duration_s == base.duration_s
+            if not changes:
+                assert [vars(x) for x in scn.faults] == [vars(x) for x in base.faults]
+                assert scn.initial_busy_frac == base.initial_busy_frac
+    hot = apply_level(fault_scenario("crah_fan_failure", 600.0, 2700.0, 1), "crah_fan_failure", "L3")
+    assert hot.initial_busy_frac == 1.0
+    stuck = apply_level(fault_scenario("sensor_stuck", 600.0, 2700.0, 1), "sensor_stuck", "L3")
+    assert stuck.faults[0].offset == -6.0
+
+
+def test_stuck_sensor_freezes_at_offset():
+    import numpy as np
+
+    from simulator.config import HallConfig
+    from simulator.faults import Fault, SensorLayer
+    from simulator.model import DataHall
+
+    hall = DataHall(HallConfig(), np.random.default_rng(0))
+    hall.init_load(0.8)
+    key = "zone2.rack07.t_in"
+    layer = SensorLayer(hall, [Fault("sensor_stuck", key, 0.0, offset=-3.0)], np.random.default_rng(1))
+    first = layer.measure(0.0)["zone2"]["rack07"]["t_in"]
+    true = hall.true_readings()["zone2"]["rack07"]["t_in"]
+    assert abs(first - (true - 3.0)) < 1.0                     # frozen 3 K low (plus noise)
+    for _ in range(30):
+        hall.step(1.0)
+    assert layer.measure(30.0)["zone2"]["rack07"]["t_in"] == first

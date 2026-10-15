@@ -14,7 +14,7 @@ AWS_REGION ?= $(AWS_DEFAULT_REGION)
 export AWS_DEFAULT_REGION AWS_REGION
 export AWS_ENVAR_ALLOWLIST := AWS_REGION,AWS_DEFAULT_REGION
 
-.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-cost aws-bill aws-destroy experiments e1 analysis live-experiment latency warm
+.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-cost aws-bill aws-destroy experiments e1 e5 analysis live-experiment latency warm
 
 help:          ## List available commands
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-15s %s\n",$$1,$$2}'
@@ -121,12 +121,16 @@ WORKERS ?= $(shell n=$$(nproc); [ $$n -gt 1 ] && echo $$((n - 1)) || echo 1)
 SUITE ?= all
 LIVE_MODES ?= M1,M2,M3
 LIVE_SEEDS ?= 1
-experiments:   ## All experiment suites offline (E1, M1 sensitivity, E4), then tables + figures
+experiments:   ## All experiment suites offline (E1, M1 sensitivity, E4, E5), then tables + figures
 	$(PY) -m experiments.batch --suite $(SUITE) --seeds $(EXP_SEEDS) --workers $(WORKERS)
 	$(PY) -m experiments.analysis
 
 e1:            ## Only E1 (8 faults x 3 modes x 20 seeds), then tables + figures
 	$(PY) -m experiments.batch --suite e1 --seeds $(EXP_SEEDS) --workers $(WORKERS)
+	$(PY) -m experiments.analysis
+
+e5:            ## Only E5 severity sweep (8 faults x 3 levels x 3 modes x 10 seeds), then tables + figures
+	$(PY) -m experiments.batch --suite e5 --seeds $(EXP_SEEDS) --workers $(WORKERS)
 	$(PY) -m experiments.analysis
 
 analysis:      ## Tables, tests and figures from experiments/results/runs.csv
@@ -204,6 +208,9 @@ aws-bootstrap: ## One-time CDK bootstrap of the AWS account/region
 aws-deploy: build-lambdas ## Deploy all stacks to real AWS (on-demand tables, IoT Core)
 	source $(VENV)/bin/activate && $(AWSENV) cdk deploy --all --require-approval never \
 	  -c stage=$(AWS_STAGE) -c alert_email=$(ALERT_EMAIL) -c ddb_billing=on_demand
+	@$(AWSENV) aws cloudformation describe-stacks --stack-name DcSelfheal-$(AWS_STAGE)-Monitoring \
+	  --query "Stacks[0].Outputs[?OutputKey=='DashboardUrl'].OutputValue" --output text \
+	  | sed 's/^/Dashboard: /' || true
 
 aws-devices:   ## Create the gateways' X.509 certificate (writes certs/)
 	$(AWSENV) $(PY) -m tools.aws_devices create --stage $(AWS_STAGE)

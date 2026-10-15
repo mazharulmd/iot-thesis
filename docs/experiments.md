@@ -1,4 +1,4 @@
-# Experiments (Step 7): E1 fault response and E4 robustness
+# Experiments (Step 7): E1 fault response, E4 robustness and E5 severity
 
 Everything here runs without AWS through the **offline closed loop** (`experiments/closed_loop.py`):
 the simulator, the detection engine, the deployed state-machine definition (run by a small ASL
@@ -20,6 +20,29 @@ offline numbers carry over.
 | E4 load surge | Normal operation with a synchronised swing in one zone (all racks idle for 15 min, then all start a job at once) × 3 modes × 20 seeds = 60 runs. Any command is a false remediation. |
 | E4 faulty sensor | A physical fault while a rack sensor in the same zone already failed 5 min earlier (CRAH 2 + stuck rack07; chilled-water drift + drifting rack12) × 3 modes × 10 seeds = 60 runs. |
 | E4 message loss | 5, 10, 20 % of gateway messages lost × 8 faults × M2/M3 × 10 seeds = 480 runs. |
+| E5 severity | Each fault at 3 severity levels × 3 modes × 10 seeds = 720 runs (table below). One level per fault is the E1 fault, so E5 also repeats part of E1 as a reproducibility check. |
+
+### E5 severity levels
+
+E1 tests each fault at one severity. E5 asks whether the ranking M1 > M2 > M3 (in recovery time)
+holds for milder and harsher versions. A CRAH failure is on/off, so its severity is the heat load
+it fails under; a stuck sensor at its true value is harmless, so its harsher levels freeze the
+reading below the truth (masking a hot rack).
+
+| Fault | L1 (mildest) | L2 | L3 (harshest) |
+| --- | --- | --- | --- |
+| CRAH fan failure | 40 % of racks busy | 80 % busy (E1) | all racks busy |
+| Rack hotspot | 50 % local airflow loss | 65 % (E1) | 80 % |
+| Chilled-water drift | +4 K over 10 min | +7 K (E1) | +10 K |
+| Pump degradation | 40 % health lost over 30 min | 60 % (E1) | 80 % |
+| Sensor stuck | frozen at the true value (E1) | frozen 3 K low | frozen 6 K low |
+| Sensor drift | 0.25 K/min | 0.5 K/min (E1) | 1 K/min |
+| UPS battery overheat | 0.5 K/min at half load | 1 K/min (E1) | 2 K/min |
+| PDU overload | racks at 106 % of rating | 112 % (E1) | 118 % |
+
+Analysis: per fault × level cell, M1 vs M2 and M2 vs M3 with Mann–Whitney U, Holm-corrected
+across the 24 cells of each comparison. Output: `e5_summary.md` (a ranking check, then every cell)
+and `fig_e5_severity.png`.
 
 ### The simulated human (M1, and approvals in M2/M3)
 
@@ -66,6 +89,7 @@ ranks them worse than every recovered run; a median on a censored value is shown
 | --- | --- | --- |
 | `make experiments` | All offline suites, then tables and figures | 48.6 min on the OCI server (7 workers) |
 | `make e1` | Only E1 | about 12 min |
+| `make e5` | Only E5 (720 runs) | about 20 min |
 | `make analysis` | Tables, tests and figures from `experiments/results/runs.csv` | seconds |
 | `make live-experiment` | 8 faults × 3 modes × 1 seed on the live stack at x10 | about 1 h 50 min |
 
