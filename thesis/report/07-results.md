@@ -117,7 +117,30 @@ With 20 % of messages lost, the ML hybrid still detected every fault. Detection 
 
 ## E5: severity
 
-[E5 results to be inserted when the severity sweep has finished: ranking check across the three severity levels, Table 16 and Figure 7 from experiments/results/e5_summary.md and fig_e5_severity.png.]
+Experiment E5 repeated every fault type at three severity levels, from milder to harsher than in E1, with 10 seeds per mode (720 runs). Table 16 shows the median time to recover per level and mode, and Figure 7 shows the same results with their confidence intervals.
+
+Table 16. E5 median time to recover in minutes (M1 / M2 / M3, 10 runs per cell)
+
+| Fault | Level 1 (mildest) | Level 2 (E1 level) | Level 3 (harshest) |
+| --- | --- | --- | --- |
+| CRAH fan failure | 12.8 / 0.8 / 0.8 | 12.7 / 1.0 / 1.0 | 13.0 / 1.1 / 1.1 |
+| Rack hotspot | 0.0 / 0.0 / 0.0 | 12.5 / 0.8 / 0.8 | > 45 / > 45 / > 45 |
+| Chilled-water drift | 20.1 / 8.2 / 1.4 | 16.7 / 4.9 / 1.7 | 15.3 / 3.7 / 1.3 |
+| Pump degradation | > 45 / > 45 / 0.0 | > 45 / > 45 / 0.0 | > 45 / > 45 / 0.0 |
+| Stuck sensor | 0.0 / 0.0 / 0.0 | > 45 / > 45 / 1.0 | > 45 / > 45 / 1.0 |
+| Drifting sensor | 37.7 / 26.1 / 4.1 | 25.1 / 13.3 / 2.3 | 18.8 / 7.0 / 1.5 |
+| UPS battery overheat | > 45 / > 45 / 0.0 | 39.2 / 39.2 / 0.0 | 41.8 / 41.8 / 28.3 |
+| PDU overload | 12.6 / 12.6 / 12.5 | 12.7 / 12.7 / 12.5 | 12.6 / 12.6 / 12.5 |
+
+The stuck-sensor levels are defined differently from the other faults: level 1 freezes the reading at its true value, as in E1, while levels 2 and 3 freeze it 3 K and 6 K below the truth, so that the frozen sensor hides a rack that is getting warmer.
+
+![Recovery across fault severity](figures/fig_e5_severity.png)
+
+Figure 7. Median time to recover across three severity levels per fault type
+
+The ranking of the modes held at every severity level. In none of the 48 comparisons (24 fault and level cells, each comparing M1 with M2 and M2 with M3) was the later mode significantly slower than the earlier one. Automation was significantly faster than alert-only response in 10 cells and ML detection was significantly faster than static limits in 13 cells (Holm-adjusted p < 0.05); in the remaining cells the modes did not differ. The limits detected 70 % of the faults in E5 and the ML hybrid 100 %. When a stuck sensor hid a warming rack, only the ML hybrid noticed it and quarantined the sensor within about one minute, while the other modes never recovered within the observation window. No wrong action occurred in any of the 720 runs.
+
+E5 also showed two limits of the framework. A rack hotspot with 80 % of its local airflow lost was not resolved by any mode, because the only automatic action, boosting the zone's cooling, cannot compensate for such a loss; the workload move that the playbook requests from a person is outside the automation. The fastest UPS battery overheating, 2 K per minute, exceeded the battery limit in most runs before the approval of the simulated operator arrived, even though the ML hybrid detected it within a minute. For high-risk faults that develop this quickly, the approval step sets the limit of what automation can achieve.
 
 ## Cloud pipeline: latency, scalability and cost
 
@@ -127,9 +150,9 @@ The latency from a fault to the first corrective command was dominated by detect
 
 **Measurements on AWS.** [Step 8, to be completed after the measurements on AWS: end-to-end latency from sensor message to first command at the gateway (p50, p95, p99) through IoT Core; the results of the load test at 50, 500 and 2,000 gateways, including messages processed and Lambda throttles; and the measured AWS bill. Source files: experiments/results/e2_summary.md, e3_measured.md.]
 
-**Cost model.** Table 16 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Mumbai region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
+**Cost model.** Table 17 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Mumbai region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
 
-Table 16. Estimated monthly AWS cost (USD, list prices, default usage figures)
+Table 17. Estimated monthly AWS cost (USD, list prices, default usage figures)
 
 | Service | 1 hall | 10 halls | 100 halls |
 | --- | --- | --- | --- |
@@ -145,17 +168,17 @@ DynamoDB was the largest item. With provisioned capacity sized to the load inste
 
 ## Summary of the hypotheses
 
-Table 17 summarises the outcome of each hypothesis.
+Table 18 summarises the outcome of each hypothesis.
 
-Table 17. Outcome of the hypotheses
+Table 18. Outcome of the hypotheses
 
 | # | Hypothesis | Result | Outcome |
 | --- | --- | --- | --- |
-| H1 | Automation shortens recovery | 4 of 4 limit-detectable harmful faults faster, p < 10⁻⁶, r ≥ 0.97 | Pass |
+| H1 | Automation shortens recovery | 4 of 4 limit-detectable harmful faults faster, p < 10⁻⁶, r ≥ 0.97; ranking held at all severity levels (E5) | Pass |
 | H2 | ML detects more faults, slow ones earlier | 8 of 8 fault types detected; 4 slow faults faster, p < 10⁻⁵ | Pass |
 | H3 | ML adds no false actions | 0 automated false actions; 1 notify-only alert per day | Pass (criterion post hoc) |
 | H4 | Detection generalises to real data | F1 0.77 against 0.76 for limits and 0.78 best published; higher false alarm rate | Pass on F1, with a limitation |
-| H5 | Guardrails keep automation safe | 0 wrong actions in all runs; every guardrail tested; approval shown end to end on the local stack | Pass (criterion post hoc) |
+| H5 | Guardrails keep automation safe | 0 wrong actions in all 2,120 runs; every guardrail tested; approval shown end to end on the local stack | Pass (criterion post hoc) |
 | H6 | The cloud path adds only seconds | Local stack: about 0.1 s from gateway to detector | Open (AWS measurement) |
 | H7 | The design scales | – | Open (AWS load test) |
 | H8 | Running cost is small | Model with default usage: $0.32 per rack per month | Open (measured bill) |
