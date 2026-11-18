@@ -44,7 +44,7 @@ from playbooks.asl import execute
 from playbooks.catalog import PlanError, build_plan
 from playbooks.state_machine import definition
 from simulator.config import HallConfig, ScenarioConfig
-from simulator.faults import SensorLayer, apply_physical_faults
+from simulator.faults import Fault, SensorLayer, apply_physical_faults
 from simulator.model import DataHall
 from simulator.runner import load_scenario
 
@@ -136,11 +136,15 @@ def _drain(sqs, url: str) -> list[dict]:
 
 def run_closed_loop(scn: ScenarioConfig, *, detector: str = "d2h", automation: str = "on", poll_s: int = 10,
                     operator: dict | None = None, approval_timeout_s: int = 1800, human: dict | None = None,
-                    drop_rate: float = 0.0, cfg: HallConfig | None = None) -> ClosedLoopResult:
+                    drop_rate: float = 0.0, cfg: HallConfig | None = None, observer=None) -> ClosedLoopResult:
     """operator: None (nobody answers approvals) or {"decision": "approve"|"reject", "delay_s": seconds}.
     human:    alert-only mode (M1): {"delay_s": s, "stage_gap_s": s} - after an alert with a diagnosed
               fault, the operator carries out the same playbook by hand, stage by stage.
-    drop_rate: probability that a gateway message never reaches the cloud (E4)."""
+    drop_rate: probability that a gateway message never reaches the cloud (E4).
+    observer: optional live view (the dashboard). After each publish it gets
+              observer.on_publish(t, out, ddb) and returns control commands to apply now:
+              ("inject", fault_spec_dict), ("decide", incident_id, "approve"|"reject", by) or ("stop",).
+              Without an observer the run is unchanged."""
     cfg = cfg or HallConfig()
     env = {"AWS_DEFAULT_REGION": REGION, "AWS_ACCESS_KEY_ID": "test", "AWS_SECRET_ACCESS_KEY": "test",
            "INCIDENTS_TABLE": "Incidents", "LOCKS_TABLE": "Locks", "TELEMETRY_TABLE": "Telemetry",
@@ -153,7 +157,7 @@ def run_closed_loop(scn: ScenarioConfig, *, detector: str = "d2h", automation: s
         with mock_aws():
             res = _create_resources()
             os.environ["ALERTS_TOPIC"], os.environ["SHADOW_QUEUE_URL"] = res["topic"], res["shadow_q"]
-            return _run(scn, cfg, detector, res, operator, approval_timeout_s, human, drop_rate)
+            return _run(scn, cfg, detector, res, operator, approval_timeout_s, human, drop_rate, observer)
     finally:
         for k, v in saved.items():
             if v is None:
@@ -163,7 +167,7 @@ def run_closed_loop(scn: ScenarioConfig, *, detector: str = "d2h", automation: s
 
 
 def _run(scn: ScenarioConfig, cfg: HallConfig, detector: str, res: dict, operator: dict | None,
-         approval_timeout_s: int, human: dict | None, drop_rate: float) -> ClosedLoopResult:
+         approval_timeout_s: int, human: dict | None, drop_rate: float, observer=None) -> ClosedLoopResult:
     rem, appr = _load("remediation"), _load("approval")
     start = datetime.fromisoformat(scn.start_time.replace("Z", "+00:00")).astimezone(timezone.utc)
     clock = {"t": 0.0}
@@ -243,12 +247,12 @@ def _run(scn: ScenarioConfig, cfg: HallConfig, detector: str, res: dict, operato
             heapq.heappush(waiting, (clock["t"] + human.get("stage_gap_s", 120), next(counter), "human",
                                      (ev, plan, k + 1)))
 
-    def operator_answers(token: str) -> None:
+    def operator_answers(token: str, decision: str | None = None, by: str = "simulated operator") -> None:
         items = ddb.Table("Incidents").scan()["Items"]
         item = next((i for i in items if i["sk"] == "APPROVAL" and i.get("token") == token), None)
         if item:
             out.approvals.append(appr.handler({"incident": item["id"], "nonce": item["nonce"],
-                                               "decision": operator["decision"], "by": "simulated operator"}, None))
+                                               "decision": decision or operator["decision"], "by": by}, None))
         for tok, reply in sfn.replies:
             if tok in tokens:
                 entry, gen = tokens.pop(tok)
@@ -271,6 +275,24 @@ def _run(scn: ScenarioConfig, cfg: HallConfig, detector: str, res: dict, operato
             reported["cmd_id"] = desired["cmd_id"]
         store.update(gw, {"reported": reported})
         out.commands.append({"t_s": clock["t"], "gw": gw, "desired": desired, "applied": reported, "errors": errors})
+
+    def control(cmd: tuple) -> bool:
+        """A command from the observer; returns False to stop the run."""
+        if cmd[0] == "stop":
+            return False
+        if cmd[0] == "inject":
+            f = Fault(**{**cmd[1], "start_s": clock["t"]})
+            scn.faults.append(f)
+            if f.is_sensor_fault:
+                sensors.faults.append(f)
+            out.labels.append({"type": f.type, "target": f.target, "start_s": f.start_s,
+                               "normal_event": f.is_normal_event})
+        elif cmd[0] == "decide":
+            _, incident_id, decision, by = cmd
+            item = ddb.Table("Incidents").get_item(Key={"id": incident_id, "sk": "APPROVAL"}).get("Item")
+            if item and item.get("status") == "pending" and item.get("token") in tokens:
+                operator_answers(item["token"], decision, by)
+        return True
 
     for _ in range(int(round(scn.duration_s / cfg.dt_s)) + 1):
         t = clock["t"] = hall.t
@@ -314,6 +336,8 @@ def _run(scn: ScenarioConfig, cfg: HallConfig, detector: str, res: dict, operato
                     out.executions.append(entry)
                     advance(entry, execute(defn, e, invoke))
             next_publish += cfg.publish_period_s
+            if observer is not None and not all(control(c) for c in (observer.on_publish(t, out, ddb) or ())):
+                break
         apply_physical_faults(hall, scn.faults, t)
         hall.step(cfg.dt_s)
 

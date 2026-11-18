@@ -15,6 +15,7 @@ A serverless AWS IoT framework for automated anomaly detection and remediation i
 | `lambdas/` | Detector (Step 4), remediation steps (Step 5), approval page (Step 6) | Steps 4–6 |
 | `playbooks/` | Playbook catalog (data), state machine definition, small ASL runner | Step 5 |
 | `experiments/` | Offline closed loop, metrics, experiment batches (E1, E4), analysis and figures; load tests later | Steps 5–8 |
+| `dashboard/` | Live control-room dashboard (offline simulation, LocalStack or AWS) | – |
 | `tests/` | Unit tests | All steps |
 | `docs/` | Diagrams and runbook | All steps |
 | `thesis/` | Research proposal, RQ → evidence map, deviations, remaining work | – |
@@ -25,6 +26,8 @@ A serverless AWS IoT framework for automated anomaly detection and remediation i
 - **Offline closed loop (no AWS at all):** simulator, detector and playbooks in one process, e.g. `make playbook S=crah_fan_failure`.
 
 - **Real AWS (final validation, load test, cost):** the same CDK code plus an IoT Core stack, deployed with `make aws-deploy`; see [docs/aws.md](docs/aws.md).
+
+**Live dashboard:** `make dashboard` opens a control-room view of the simulated hall in the browser: inject faults and watch them being detected, fixed and verified; see [docs/dashboard.md](docs/dashboard.md).
 
 Step guides: [simulator](docs/simulator.md) · [pipeline](docs/pipeline.md) · [detection](docs/detection.md) · [remediation](docs/remediation.md) · [guardrails](docs/guardrails.md) · [experiments](docs/experiments.md) · [real AWS](docs/aws.md)
 

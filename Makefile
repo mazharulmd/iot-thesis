@@ -14,7 +14,7 @@ AWS_REGION ?= $(AWS_DEFAULT_REGION)
 export AWS_DEFAULT_REGION AWS_REGION
 export AWS_ENVAR_ALLOWLIST := AWS_REGION,AWS_DEFAULT_REGION
 
-.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-cost aws-bill aws-destroy experiments e1 e5 analysis live-experiment latency warm
+.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-cost aws-bill aws-destroy experiments e1 e5 analysis live-experiment latency warm dashboard dashboard-local dashboard-aws
 
 help:          ## List available commands
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-15s %s\n",$$1,$$2}'
@@ -221,6 +221,15 @@ aws-check:     ## End-to-end checks on AWS: CRAH failure fixed, approval via the
 
 aws-loadtest:  ## E2 load test on IoT Core:  make aws-loadtest [DEVICES=50,500,2000] [MINUTES=30] [YES=1]
 	$(AWSENV) $(PY) -m tools.loadgen --stage $(AWS_STAGE) --devices $(DEVICES) --minutes $(MINUTES) $(if $(YES),--yes,)
+
+dashboard:     ## Live control-room dashboard on the offline simulation:  make dashboard [DASH_SPEED=10] [HOST=0.0.0.0]
+	$(PY) -m dashboard --speed $(or $(DASH_SPEED),10) --host $(or $(HOST),127.0.0.1)
+
+dashboard-local: ## Live dashboard of the LocalStack stack
+	$(PY) -m dashboard --stage local --host $(or $(HOST),127.0.0.1)
+
+dashboard-aws: ## Live dashboard of the stack on AWS:  make dashboard-aws [HOST=0.0.0.0]
+	$(AWSENV) $(PY) -m dashboard --stage $(AWS_STAGE) --host $(or $(HOST),127.0.0.1)
 
 aws-cost:      ## E3 cost model (uses e2_usage.json from the load test if present)
 	$(PY) -m experiments.cost_model

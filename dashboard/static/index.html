@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dc-selfheal · Live Control Room</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ccircle cx=%278%27 cy=%278%27 r=%276%27 fill=%27%232fe0ff%27/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#070b14; --panel:#0e1524; --panel2:#121b2e; --line:#1f2b44; --text:#dbe6ff; --muted:#7f8db0;
+  --ok:#22d39a; --warn:#ffb020; --bad:#ff4d6d; --info:#4da3ff; --violet:#b26bff; --cyan:#2fe0ff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{background:radial-gradient(1200px 600px at 20% -10%,#14254a55,transparent),radial-gradient(900px 500px at 110% 10%,#3a165555,transparent),var(--bg);min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1680px;margin:0 auto;padding:14px 16px 28px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px;font-size:17px}
+.logo .dot{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:blink 2s infinite}
+.badge{padding:3px 9px;border-radius:99px;font-size:12px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.badge.sim{color:var(--violet);border-color:#5a3a8a}.badge.aws{color:var(--warn);border-color:#7a5a12}
+.clock{font:600 20px var(--mono);color:var(--cyan);text-shadow:0 0 10px #2fe0ff55;margin-left:4px}
+.spacer{flex:1}
+.status{padding:7px 14px;border-radius:10px;font-weight:700;letter-spacing:.6px;border:1px solid;display:flex;align-items:center;gap:8px}
+.status i{width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.status.ok{color:var(--ok);border-color:#1d6a52;background:#0b2a22}
+.status.warn{color:var(--warn);border-color:#7a5a12;background:#2a2008;animation:pulse 1.4s infinite}
+.status.bad{color:var(--bad);border-color:#7a2235;background:#2a0c14;animation:pulse 1s infinite}
+.status.appr{color:var(--violet);border-color:#5a3a8a;background:#1f1230;animation:pulse 1s infinite}
+.ctrl{display:flex;gap:6px;align-items:center}
+.ctrl button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--muted)}
+.ctrl button.on{color:var(--cyan);border-color:#1e6a7a;box-shadow:0 0 8px #2fe0ff33 inset}
+.ctrl button:hover{color:var(--text)}
+.kpis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px 12px;position:relative;overflow:hidden}
+.kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.kpi .v{font:700 26px var(--mono);margin-top:2px;transition:color .4s}
+.kpi .s{font-size:11px;color:var(--muted)}
+.kpi.flash{animation:flash .9s}
+.grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:12px}
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.panel h2 .hint{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+/* hall */
+.hall{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.zone{background:#0a1120;border:1px solid var(--line);border-radius:12px;padding:10px;position:relative;transition:border-color .4s, box-shadow .4s}
+.zone.hot{border-color:#7a2235;box-shadow:0 0 22px #ff4d6d33}
+.zone h3{margin:0 0 8px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+.racks{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px}
+.rack{height:92px;border-radius:6px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:4px;transition:background .6s, box-shadow .6s;border:1px solid #ffffff10;overflow:hidden}
+.rack::before{content:"";position:absolute;inset:6px 5px 26px;background:repeating-linear-gradient(180deg,#0006 0 3px,transparent 3px 7px);border-radius:3px}
+.rack .t{font:700 12px var(--mono);color:#fff;text-shadow:0 1px 3px #000;position:relative}
+.rack .n{font-size:9px;color:#ffffffaa;position:relative}
+.rack.over{animation:hotglow 1s infinite}
+.rack.quar{outline:2px dashed var(--warn);outline-offset:-3px}
+.rack.quar::after{content:"?";position:absolute;top:2px;right:4px;font-weight:800;color:var(--warn)}
+.units{display:flex;gap:8px;align-items:center}
+.fan{width:46px;height:46px;flex:none;border-radius:50%;border:2px solid #2a3a5c;position:relative;background:#081022}
+.fan svg{position:absolute;inset:3px;animation:spin linear infinite}
+.fan.off{border-color:var(--bad);box-shadow:0 0 14px #ff4d6d66}
+.fan.off svg{animation:none;opacity:.35}
+.fan.idle{border-color:#2a3a5c!important;box-shadow:none!important}.fan.idle::after{content:""!important}
+.fan.off::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;color:var(--bad);font-weight:900;font-size:22px}
+.meta{font-size:11px;color:var(--muted);line-height:1.35;min-width:0}
+.meta b{color:var(--text);font-family:var(--mono)}
+.bar{height:6px;background:#1a2440;border-radius:4px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;background:var(--info);transition:width .6s, background .6s}
+.plant{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.eq{background:#0a1120;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;min-width:0;transition:border-color .4s}
+.eq.alarm{border-color:#7a2235;box-shadow:0 0 18px #ff4d6d33}
+.eq.standby{opacity:.55}
+.eq h4{margin:0 0 3px;font-size:12px}
+.pump svg{animation:spin linear infinite}
+.thermo{width:16px;height:52px;border-radius:9px;background:#1a2440;position:relative;flex:none;overflow:hidden;border:1px solid #2a3a5c}
+.thermo>i{position:absolute;left:0;right:0;bottom:0;transition:height .6s, background .6s}
+.truth{margin-top:10px;font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{padding:2px 8px;border-radius:99px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
+.chip.low{color:var(--ok);border-color:#1d6a52}.chip.medium{color:var(--warn);border-color:#7a5a12}.chip.high{color:var(--bad);border-color:#7a2235}
+.chip.fault{color:#ffb3c1;border-color:#7a2235;background:#2a0c14}
+/* inject */
+.inject{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.inject button{background:#0a1120;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;display:flex;align-items:center;gap:8px;transition:transform .1s,border-color .2s}
+.inject button:hover{border-color:#3a5a9a;transform:translateY(-1px)}
+.inject button:active{transform:scale(.98)}
+.inject button .lbl{flex:1;font-size:12.5px}
+.demo{margin-top:8px;width:100%;padding:10px;border-radius:10px;border:1px solid #1e6a7a;background:linear-gradient(90deg,#0b2a33,#1a1030);color:var(--cyan);font-weight:700;letter-spacing:.3px}
+.demo:hover{box-shadow:0 0 16px #2fe0ff44}
+/* approval */
+.approval{border:2px solid var(--violet);background:#1a1030;animation:apglow 1.4s infinite}
+.approval .plan{font:12px var(--mono);background:#0b0716;border-radius:8px;padding:8px;margin:8px 0;white-space:pre-wrap;color:#d9c7ff}
+.approval .btns{display:flex;gap:8px}
+.approval button{flex:1;padding:9px;border-radius:9px;font-weight:700;border:1px solid}
+.approve{background:#0b2a22;border-color:#1d6a52;color:var(--ok)}
+.reject{background:#2a0c14;border-color:#7a2235;color:var(--bad)}
+/* incidents */
+.inc{background:#0a1120;border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:8px}.inc.new{animation:slidein .5s}
+.inc .top{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.inc .top b{font-family:var(--mono)}
+.inc .st{margin-left:auto;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.steps{display:flex;align-items:center;margin-top:8px}
+.step{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;font-size:10px;color:var(--muted);position:relative}
+.step i{width:14px;height:14px;border-radius:50%;border:2px solid #2a3a5c;background:#0a1120;z-index:1;transition:all .4s}
+.step.done i{background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)}
+.step.now i{background:var(--warn);border-color:var(--warn);animation:pulse 1s infinite}
+.step.bad i{background:var(--bad);border-color:var(--bad)}
+.step:not(:last-child)::after{content:"";position:absolute;top:7px;left:50%;width:100%;height:2px;background:#2a3a5c}
+.step.done:not(:last-child)::after{background:var(--ok)}
+.empty{color:var(--muted);font-size:12px;padding:6px 0}
+/* stream */
+.stream{font:12px/1.5 var(--mono);height:230px;overflow:auto;background:#050912;border:1px solid var(--line);border-radius:10px;padding:8px}
+.stream div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stream div.new{animation:fadein 1.2s}
+.stream .tm{color:#5f6d90}.stream .an{color:var(--warn)}.stream .cm{color:var(--cyan)}.stream .al{color:var(--violet)}.stream .ok{color:var(--ok)}.stream .bd{color:var(--bad)}
+/* charts */
+.charts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+.chart canvas{width:100%;height:170px;display:block}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.toast{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9}
+.toast div{background:#101a30;border:1px solid var(--line);border-left:4px solid var(--info);border-radius:10px;padding:10px 14px;min-width:260px;box-shadow:0 10px 30px #0008;animation:slidein .35s}
+.err{background:#2a0c14;border:1px solid #7a2235;color:#ffb3c1;border-radius:10px;padding:8px 12px;margin-bottom:10px;display:none}
+footer{margin-top:14px;color:#55628a;font-size:11px;text-align:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes pulse{50%{opacity:.6}}
+@keyframes hotglow{50%{box-shadow:0 0 16px #ff4d6dcc}}
+@keyframes apglow{50%{box-shadow:0 0 26px #b26bff88}}
+@keyframes flash{0%{box-shadow:0 0 0 #2fe0ff00}30%{box-shadow:0 0 22px #2fe0ff88}100%{box-shadow:0 0 0 #2fe0ff00}}
+@keyframes slidein{from{transform:translateY(8px);opacity:0}}
+@keyframes fadein{from{opacity:0;background:#2fe0ff22}}
+@media (max-width:1250px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.grid{grid-template-columns:1fr}.charts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.hall{grid-template-columns:1fr}#plant{grid-template-columns:repeat(2,minmax(0,1fr))!important}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.charts{grid-template-columns:1fr}.inject{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="dot"></span>dc-selfheal <span style="color:var(--muted);font-weight:500">· Live Control Room</span></div>
+    <span id="mode" class="badge">…</span>
+    <span id="clock" class="clock">--:--:--</span>
+    <div class="spacer"></div>
+    <div class="ctrl" id="simctrl" hidden>
+      <span style="font-size:11px;color:var(--muted)">SPEED</span>
+      <button data-speed="1">1×</button><button data-speed="5">5×</button><button data-speed="10">10×</button><button data-speed="30">30×</button><button data-speed="60">60×</button>
+      <button id="pause">❚❚</button><button id="reset" title="Start a fresh hall">⟲ Reset</button>
+    </div>
+    <div class="ctrl"><button id="sound" title="Sound on new incidents">🔈 Sound</button></div>
+    <div id="status" class="status ok"><i></i><span>ALL SYSTEMS NOMINAL</span></div>
+  </header>
+  <div id="err" class="err"></div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid">
+    <div class="col">
+      <div class="panel">
+        <h2>Data hall · 20 GPU racks · rack inlet temperature <span class="hint" id="limitHint"></span></h2>
+        <div class="hall" id="hall"></div>
+        <div class="plant" id="plant"></div>
+        <div class="truth" id="truth" hidden></div>
+      </div>
+      <div class="charts" id="charts"></div>
+    </div>
+    <div class="col">
+      <div class="panel" id="injectPanel" hidden>
+        <h2>Inject a fault <span class="hint">the cloud is not told — it has to find it</span></h2>
+        <div class="inject" id="inject"></div>
+        <button id="demo" class="demo">▶ Guided demo · cooling failure → pump wear → UPS overheat (approval)</button>
+      </div>
+      <div id="approvals"></div>
+      <div class="panel">
+        <h2>Incidents · remediation playbooks <span class="hint" id="incHint"></span></h2>
+        <div id="incidents"></div>
+      </div>
+      <div class="panel">
+        <h2>Event stream <span class="hint">anomalies · commands · alerts</span></h2>
+        <div class="stream" id="stream"></div>
+      </div>
+    </div>
+  </div>
+  <footer>Serverless AWS IoT framework for automated anomaly detection and remediation · detector, state machine and Lambda code are the deployed ones</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get("token") || "";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LABEL = {crah_fan_failure:"CRAH fan failure", rack_hotspot:"Rack hotspot", chw_supply_drift:"Chilled-water drift",
+  pump_degradation:"Pump degradation", sensor_stuck:"Stuck sensor", sensor_drift:"Drifting sensor",
+  ups_battery_overheat:"UPS battery overheat", pdu_overload:"PDU overload", unexplained:"Unexplained anomaly"};
+const ICON = {crah_fan_failure:"🌀", rack_hotspot:"🔥", chw_supply_drift:"💧", pump_degradation:"⚙️", sensor_stuck:"🧊",
+  sensor_drift:"📈", ups_battery_overheat:"🔋", pdu_overload:"⚡"};
+let S = null, prev = {incidents:0, mitigated:0, approvals:0}, sound = false, busy = false;
+
+async function api(path, body) {
+  const r = await fetch(path, {method: body ? "POST" : "GET", headers: {"Content-Type":"application/json", "X-Token": TOKEN},
+                                body: body ? JSON.stringify(body) : undefined});
+  return r.json();
+}
+function toast(text, color) {
+  const d = document.createElement("div"); d.innerHTML = text; d.style.borderLeftColor = color || "var(--info)";
+  $("#toast").prepend(d); setTimeout(() => d.remove(), 5200);
+}
+function beep(freq) {
+  if (!sound) return;
+  try { const a = new (window.AudioContext||window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = freq; o.type = "triangle"; g.gain.value = .06; o.connect(g); g.connect(a.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .35); o.stop(a.currentTime + .4); } catch (e) {}
+}
+
+// temperature -> colour (blue, teal, green, amber, red, magenta)
+const STOPS = [[16,[30,90,200]],[20,[20,170,200]],[23,[30,200,120]],[26,[230,190,40]],[27.5,[255,120,40]],[31,[255,60,90]],[40,[200,40,220]]];
+function tcol(t, a=1) {
+  if (t == null || isNaN(t)) return `rgba(60,70,90,${a})`;
+  let lo = STOPS[0], hi = STOPS[STOPS.length-1];
+  for (let i=0;i<STOPS.length-1;i++) if (t>=STOPS[i][0] && t<=STOPS[i+1][0]) { lo=STOPS[i]; hi=STOPS[i+1]; break; }
+  if (t < STOPS[0][0]) hi = lo; if (t > hi[0]) lo = hi;
+  const f = hi[0]===lo[0] ? 0 : (t-lo[0])/(hi[0]-lo[0]);
+  const c = lo[1].map((v,i)=>Math.round(v+(hi[1][i]-v)*f));
+  return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+}
+const FAN = `<svg viewBox="0 0 40 40"><g fill="#4da3ff"><path d="M20 20 C18 10 22 4 27 6 C30 8 26 15 20 20Z"/><path d="M20 20 C30 18 36 22 34 27 C32 30 25 26 20 20Z"/><path d="M20 20 C22 30 18 36 13 34 C10 32 14 25 20 20Z"/><path d="M20 20 C10 22 4 18 6 13 C8 10 15 14 20 20Z"/></g><circle cx="20" cy="20" r="3.5" fill="#cfe2ff"/></svg>`;
+const PUMP = `<svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="17" fill="none" stroke="#2fe0ff" stroke-width="2"/><g stroke="#2fe0ff" stroke-width="3" stroke-linecap="round"><line x1="20" y1="20" x2="20" y2="7"/><line x1="20" y1="20" x2="31" y2="27"/><line x1="20" y1="20" x2="9" y2="27"/></g><circle cx="20" cy="20" r="3" fill="#cfe2ff"/></svg>`;
+
+function fmtT(sec) {           // simulation clock or wall clock
+  if (sec == null) return "";
+  if (S && S.mode === "simulation") { const s = Math.max(0, Math.round(sec)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60);
+    return `T+${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
+  return new Date(sec*1000).toLocaleTimeString();
+}
+function isoT(iso) {
+  if (!iso) return null;
+  const e = Date.parse(iso)/1000;
+  if (S && S.mode === "simulation" && S.info.start_time) return e - Date.parse(S.info.start_time)/1000;
+  return e;
+}
+
+function renderKpis(k) {
+  const items = [
+    ["Hottest inlet", k.hottest_inlet_c != null ? k.hottest_inlet_c.toFixed(1)+"°" : "–", `limit ${S.limit_c} °C`, tcol(k.hottest_inlet_c)],
+    ["Racks over 27 °C", k.racks_over_limit ?? 0, "of 20", k.racks_over_limit ? "var(--bad)" : "var(--ok)"],
+    ["Anomalies", k.anomalies, "confirmed by the detector", k.anomalies ? "var(--warn)" : null],
+    ["Active incidents", k.active, `${k.incidents} total`, k.active ? "var(--bad)" : null],
+    ["Fixed automatically", k.mitigated, k.escalated ? `${k.escalated} escalated` : "verified on telemetry", "var(--ok)"],
+    ["Median time to fix", k.median_recovery_s != null ? (k.median_recovery_s/60).toFixed(1)+"m" : "–", "incident open → verified", "var(--cyan)"],
+    ["Commands sent", k.commands, "via device shadows", "var(--cyan)"],
+    S.mode === "aws" && k.latency_ms != null ? ["Pipeline latency", Math.round(k.latency_ms)+"ms", "gateway → detector", "var(--cyan)"]
+                                              : ["Messages", k.messages, "telemetry processed", null],
+  ];
+  const el = $("#kpis");
+  if (!el.children.length) el.innerHTML = items.map(() => `<div class="kpi"><div class="l"></div><div class="v"></div><div class="s"></div></div>`).join("");
+  items.forEach(([l,v,s,c], i) => { const d = el.children[i];
+    if (d.querySelector(".v").textContent !== String(v) && d.dataset.init) { d.classList.remove("flash"); void d.offsetWidth; d.classList.add("flash"); }
+    d.dataset.init = 1; d.querySelector(".l").textContent = l; d.querySelector(".v").textContent = v; d.querySelector(".s").textContent = s;
+    d.querySelector(".v").style.color = c || "var(--text)"; });
+}
+
+function buildHall() {
+  let html = "";
+  for (let z = 1; z <= 4; z++) {
+    let racks = ""; for (let r = 1; r <= 5; r++) { const id = "rack" + String((z-1)*5+r).padStart(2,"0");
+      racks += `<div class="rack" id="r_${id}"><span class="t">–</span><span class="n">${id.replace("rack","R")}</span></div>`; }
+    html += `<div class="zone" id="z_${z}"><h3><span>ZONE ${z}</span><span class="sb"></span></h3><div class="racks">${racks}</div>
+      <div class="units"><div class="fan" id="f_crah${z}">${FAN}</div>
+        <div class="meta">CRAH ${z} · <b class="pct"></b><br>supply <b class="sup"></b> return <b class="ret"></b>
+          <div style="margin-top:4px">PDU ${z} <b class="pdu"></b></div><div class="bar"><i></i></div></div></div></div>`;
+  }
+  $("#hall").innerHTML = html;
+  $("#plant").innerHTML = `
+    <div class="eq" id="e_chiller"><div style="font-size:30px">❄️</div><div class="meta"><h4>Chiller <span class="as"></span></h4>supply <b class="sup"></b><br>setpoint <b class="sp"></b></div></div>
+    ${[1,2].map(n => `<div class="eq pump" id="e_pump${n}"><div style="width:40px;flex:none">${PUMP}</div><div class="meta"><h4>Pump ${n} <span class="sb"></span></h4>flow <b class="fl"></b> L/s<br>vibration <b class="vb"></b> mm/s</div></div>`).join("")}
+    <div class="eq" id="e_crah5"><div class="fan" id="f_crah5">${FAN}</div><div class="meta"><h4>Standby CRAH 5</h4><span class="txt"></span></div></div>
+    ${[1,2].map(n => `<div class="eq" id="e_ups${n}"><div class="thermo"><i></i></div><div class="meta"><h4>UPS ${n}</h4>battery <b class="tb"></b><br>load <b class="ld"></b> kW</div></div>`).join("")}`;
+  $("#plant").style.gridTemplateColumns = "repeat(3,minmax(0,1fr))";
+  $("#limitHint").innerHTML = `<span class="chip">ASHRAE limit ${S.limit_c} °C</span>`;
+}
+const setTxt = (el, v) => { if (el && el.textContent !== String(v)) el.textContent = v; };
+function spin(fanEl, on, pct) {
+  fanEl.classList.toggle("off", !on);
+  const d = on ? Math.max(.25, 3 - (pct||0)/40).toFixed(2) + "s" : "0s";
+  const svg = fanEl.querySelector("svg"); if (svg.style.animationDuration !== d) svg.style.animationDuration = d;
+}
+function renderHall() {
+  if (!$("#z_1")) buildHall();
+  const gws = S.gateways, q = new Set();
+  Object.values(gws).forEach(g => (g.quarantined||[]).forEach(x => q.add(String(x).split(".").slice(-2)[0])));
+  const p = (gws.plant || {}).assets || {}, s5 = p.crah5 || {};
+  for (let z = 1; z <= 4; z++) {
+    const a = (gws["zone"+z] || {}).assets || {}, crah = a["crah"+z] || {}, pdu = a["pdu"+z] || {};
+    let hot = false;
+    for (let r = 1; r <= 5; r++) {
+      const id = "rack" + String((z-1)*5+r).padStart(2,"0"), el = $("#r_"+id), t = (a[id]||{}).t_in;
+      if (t > S.limit_c) hot = true;
+      el.style.background = `linear-gradient(180deg,${tcol(t,.95)},${tcol(t,.55)})`;
+      el.classList.toggle("over", t > S.limit_c); el.classList.toggle("quar", q.has(id));
+      el.title = `${id}: inlet ${t} °C, ${(a[id]||{}).p_kw} kW`;
+      setTxt(el.querySelector(".t"), t != null ? Number(t).toFixed(1) : "–");
+    }
+    const zel = $("#z_"+z); zel.classList.toggle("hot", hot);
+    const helped = s5.status === "on" && Number(s5.zone) === z;
+    zel.querySelector(".sb").innerHTML = helped ? '<span class="chip low">+ standby CRAH 5</span>' : "";
+    const on = crah.status === "on" && (crah.fan_pct||0) > 1;
+    spin($("#f_crah"+z), on, crah.fan_pct);
+    setTxt(zel.querySelector(".pct"), on ? Math.round(crah.fan_pct)+"%" : "OFF");
+    setTxt(zel.querySelector(".sup"), (crah.t_sup ?? "–") + "°"); setTxt(zel.querySelector(".ret"), (crah.t_ret ?? "–") + "°");
+    const load = pdu.load_pct; setTxt(zel.querySelector(".pdu"), load != null ? Math.round(load)+"%" : "–");
+    const bar = zel.querySelector(".bar i"); bar.style.width = Math.min(100, load||0) + "%";
+    bar.style.background = load > 90 ? "var(--bad)" : load > 80 ? "var(--warn)" : "var(--info)";
+  }
+  const ch = p.chiller || {}, drift = (ch.t_sup ?? 0) - (ch.sp ?? 0), ce = $("#e_chiller");
+  ce.classList.toggle("alarm", drift > 1); setTxt(ce.querySelector(".sup"), (ch.t_sup ?? "–") + " °C");
+  ce.querySelector(".sup").style.color = drift > 1 ? "var(--bad)" : ""; setTxt(ce.querySelector(".sp"), (ch.sp ?? "–") + " °C");
+  setTxt(ce.querySelector(".as"), ch.assist === "on" || ch.assist === true ? "· assist" : "");
+  [1,2].forEach(n => { const x = p["pump"+n] || {}, on = x.status === "on", vib = x.vib_mms, el = $("#e_pump"+n);
+    el.classList.toggle("standby", !on); el.classList.toggle("alarm", on && vib > 4.5);
+    setTxt(el.querySelector(".sb"), on ? "" : "· standby"); setTxt(el.querySelector(".fl"), x.flow_lps ?? "–"); setTxt(el.querySelector(".vb"), vib ?? "–");
+    el.querySelector(".vb").style.color = vib > 4.5 ? "var(--bad)" : vib > 2.8 ? "var(--warn)" : "";
+    const svg = el.querySelector("svg"), d = on ? Math.max(.3, 2.4 - (x.flow_lps||0)/25).toFixed(2) + "s" : "0s";
+    if (svg.style.animationDuration !== d) svg.style.animationDuration = d; });
+  const e5 = $("#e_crah5"), on5 = s5.status === "on"; e5.classList.toggle("standby", !on5); spin($("#f_crah5"), on5, s5.fan_pct);
+  $("#f_crah5").classList.toggle("idle", !on5);
+  e5.querySelector(".txt").innerHTML = on5 ? `serving <b>zone ${esc(s5.zone)}</b> · <b>${Math.round(s5.fan_pct||0)}%</b>` : "<b>ready</b> (N+1)";
+  [1,2].forEach(n => { const x = p["ups"+n] || {}, t = x.t_batt, el = $("#e_ups"+n);
+    el.classList.toggle("alarm", t > 35); const th = el.querySelector(".thermo i");
+    th.style.height = Math.max(4, Math.min(100, ((t||20)-15)*3.3)) + "%"; th.style.background = t > 35 ? "var(--bad)" : t > 30 ? "var(--warn)" : "var(--ok)";
+    setTxt(el.querySelector(".tb"), (t ?? "–") + " °C"); el.querySelector(".tb").style.color = t > 35 ? "var(--bad)" : ""; setTxt(el.querySelector(".ld"), x.load_kw ?? "–"); });
+  if (S.mode === "simulation") {
+    const f = S.faults || [];
+    $("#truth").hidden = false;
+    const html = `<span>Ground truth (never sent to the cloud):</span>` +
+      (f.length ? f.map(x => `<span class="chip fault">${ICON[x.type]||""} ${esc(LABEL[x.type]||x.type)} · ${esc(x.target)} · ${fmtT(x.start_s)}</span>`).join("") : `<span class="chip">no fault injected</span>`);
+    if ($("#truth").innerHTML !== html) $("#truth").innerHTML = html;
+  }
+}
+
+function renderInject() {
+  if (S.mode !== "simulation") return;
+  $("#injectPanel").hidden = false; $("#simctrl").hidden = false;
+  const el = $("#inject");
+  if (!el.children.length) {
+    el.innerHTML = Object.entries(S.info.menu || {}).map(([k,v]) =>
+      `<button data-fault="${k}"><b style="font-size:17px">${ICON[k]||"•"}</b><span class="lbl">${esc(v.label)}</span><span class="chip ${v.risk}">${v.risk}</span></button>`).join("");
+    el.querySelectorAll("button").forEach(b => b.onclick = async () => {
+      const r = await api("/api/inject", {fault: b.dataset.fault});
+      toast(`<b>${ICON[b.dataset.fault]||""} Fault injected</b><br>${esc(r.message)}`, "var(--bad)"); beep(220); });
+  }
+  document.querySelectorAll("[data-speed]").forEach(b => b.classList.toggle("on", Number(b.dataset.speed) === Number(S.info.speed)));
+  $("#pause").textContent = S.info.paused ? "▶" : "❚❚"; $("#pause").classList.toggle("on", !!S.info.paused);
+}
+
+let apKey = "";
+function renderApprovals() {
+  const el = $("#approvals"), key = S.approvals.map(a => a.incident).join(",");
+  if (key === apKey) return; apKey = key;
+  if (!S.approvals.length) { el.innerHTML = ""; return; }
+  el.innerHTML = S.approvals.map(a => `<div class="panel approval"><h2 style="color:var(--violet)">⚠ Human approval needed · high-risk action</h2>
+    <div><b>${esc(LABEL[a.fault_type]||a.fault_type)}</b> on <b>${esc(a.target)}</b> · playbook <b>${esc(a.playbook)}</b></div>
+    <div class="plan">${esc((a.stages||[]).join("\n"))}\n${esc(JSON.stringify(a.commands))}</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Nothing is sent to the equipment until you decide. After approval the plan is rebuilt on fresh telemetry.</div>
+    <div class="btns"><button class="approve" data-inc="${esc(a.incident)}" data-d="approve">✔ Approve</button><button class="reject" data-inc="${esc(a.incident)}" data-d="reject">✕ Reject</button></div></div>`).join("");
+  el.querySelectorAll("button").forEach(b => b.onclick = async () => {
+    b.disabled = true; const r = await api("/api/decide", {incident: b.dataset.inc, decision: b.dataset.d});
+    toast(`<b>${b.dataset.d === "approve" ? "✔ Approved" : "✕ Rejected"}</b><br>${esc(r.message)}`, b.dataset.d==="approve"?"var(--ok)":"var(--bad)"); });
+}
+
+const STEPS = [["detected","Detected"],["opened","Opened"],["approval_requested","Approval"],["act","Act"],["verified","Verified"],["closed","Closed"]];
+const seenInc = new Set(); let incHtml = "", streamKeys = new Set(), streamReady = false;
+const STCOL = {mitigated:"var(--ok)", escalated:"var(--bad)", rejected:"var(--bad)", awaiting_approval:"var(--violet)", notified:"var(--info)",
+               superseded:"var(--muted)", skipped:"var(--muted)"};
+function renderIncidents() {
+  const list = S.incidents;
+  $("#incHint").textContent = list.length ? `${list.length} shown` : "";
+  if (!list.length) { $("#incidents").innerHTML = `<div class="empty">No incidents. Inject a fault and watch the detector and the playbook react.</div>`; return; }
+  const html = list.slice(0, 6).map(i => {
+    const st = i.steps || {}, done = new Set(Object.keys(st)); done.add("detected");
+    const high = i.risk === "high", final = i.status;
+    const bad = ["escalated","rejected"].includes(final);
+    const stepsShown = STEPS.filter(([k]) => k !== "approval_requested" || high);
+    let firstOpen = stepsShown.findIndex(([k]) => !done.has(k));
+    if (final === "awaiting_approval") { done.delete("approval_requested"); firstOpen = stepsShown.findIndex(([k]) => k === "approval_requested"); }
+    const nowIdx = ["mitigated","escalated","rejected","notified","superseded","skipped"].includes(final) ? -1 : firstOpen;
+    const notAuto = ["notified","superseded","skipped"].includes(final);
+    const isNew = !seenInc.has(i.id); seenInc.add(i.id);
+    return `<div class="inc ${isNew && seenInc.ready ? "new" : ""}"><div class="top">${ICON[i.fault_type]||"•"} <b>${esc(LABEL[i.fault_type]||i.fault_type)}</b> on <b>${esc(i.target)}</b>
+      <span class="chip ${i.risk||""}">${esc(i.risk||"")}</span><span class="st" style="color:${STCOL[final]||"var(--warn)"}">${esc(final.replace("_"," "))}</span></div>
+      ${notAuto ? `<div class="empty">${esc(i.reason || (final==="superseded" ? "replaced by the diagnosed incident" : "a person was alerted"))}</div>` :
+      `<div class="steps">${stepsShown.map(([k,l], n) => `<div class="step ${done.has(k)?"done":""} ${n===nowIdx?"now":""} ${bad && n===firstOpen?"bad":""}"><i></i>${l}</div>`).join("")}</div>`}
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">${fmtT(isoT(i.opened_at))}${i.recovery_s!=null?` · fixed in <b style="color:var(--ok)">${(i.recovery_s/60).toFixed(1)} min</b>`:""}${i.correlated?` · ${i.correlated} related events grouped`:""}</div></div>`;
+  }).join("");
+  seenInc.ready = true;
+  if (html.replace(/ new"/g, '"') !== incHtml.replace(/ new"/g, '"')) { $("#incidents").innerHTML = html; incHtml = html; }
+}
+
+function renderStream() {
+  const rows = [];
+  S.events.forEach(e => rows.push([e.t, `<span class="an">▲ ANOMALY</span> ${esc(LABEL[e.fault_type]||e.fault_type)} · ${esc(e.target)}${e.playbook && e.playbook!=="notify_only"?` → ${esc(e.playbook)}`:""}`]));
+  S.commands.forEach(c => rows.push([c.t, `<span class="cm">⇢ COMMAND</span> ${esc(c.gw)} ${esc(JSON.stringify(c.desired))}`]));
+  S.alerts.forEach(a => rows.push([isoT(a.at), `<span class="${a.kind==="closed"?"ok":a.kind==="escalated"||a.kind==="rejected"?"bd":"al"}">✉ EMAIL</span> ${esc(a.subject)}`]));
+  rows.sort((a,b) => (b[0]||0) - (a[0]||0));
+  const top = rows.slice(0, 80), keys = top.map(([t, h]) => t + h).join("|");
+  if (keys === $("#stream").dataset.keys) return;
+  $("#stream").dataset.keys = keys;
+  $("#stream").innerHTML = top.map(([t, h]) => { const k = t + h, isNew = streamReady && !streamKeys.has(k); streamKeys.add(k);
+    return `<div class="${isNew ? "new" : ""}"><span class="tm">${fmtT(t)}</span>  ${h}</div>`; }).join("") || `<div class="tm">waiting for events…</div>`;
+  streamReady = true;
+}
+
+// ---- charts ----
+const CHARTS = [
+  {id:"inlet", title:"Hottest rack inlet per zone (°C)", series:[["zone1_inlet","Zone 1","#4da3ff"],["zone2_inlet","Zone 2","#ff4d6d"],["zone3_inlet","Zone 3","#22d39a"],["zone4_inlet","Zone 4","#ffb020"]], limit:27, min:16},
+  {id:"chw", title:"Chilled water (°C)", series:[["chw_sup","Supply","#2fe0ff"],["chw_sp","Setpoint","#7f8db0"]], min:8},
+  {id:"pump", title:"Pumps: flow (L/s) · vibration (mm/s)", series:[["flow","Total flow","#4da3ff"],["vib","Max vibration ×10","#ff4d6d",10]], min:0},
+  {id:"ups", title:"UPS battery (°C) · PDU load (%/3)", series:[["ups1_batt","UPS 1","#ff4d6d"],["ups2_batt","UPS 2","#ffb020"],["pdu3_load","PDU 3 /3","#b26bff",1/3]], limit:35, min:15},
+];
+function initCharts() {
+  $("#charts").innerHTML = CHARTS.map(c => `<div class="panel chart"><h2>${c.title}</h2><canvas id="c_${c.id}"></canvas>
+    <div class="legend">${c.series.map(s => `<span><i style="background:${s[2]}"></i>${s[1]}</span>`).join("")}${c.limit?`<span><i style="background:#ff4d6d;height:1px"></i>limit ${c.limit}</span>`:""}</div></div>`).join("");
+}
+function drawChart(c) {
+  const cv = $("#c_"+c.id), dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== W*dpr) { cv.width = W*dpr; cv.height = H*dpr; }
+  const g = cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const hist = S.history.slice(-180); if (hist.length < 2) return;
+  const t0 = hist[0].t, t1 = hist[hist.length-1].t || t0+1;
+  let lo = Infinity, hi = -Infinity;
+  c.series.forEach(([k,,,m=1]) => hist.forEach(p => { if (p[k] != null) { lo = Math.min(lo, p[k]*m); hi = Math.max(hi, p[k]*m); } }));
+  if (c.limit) { lo = Math.min(lo, c.limit); hi = Math.max(hi, c.limit); }
+  if (c.min != null) lo = Math.min(lo, c.min);
+  if (!isFinite(lo)) return; const dataLo = lo, pad = (hi-lo)*.12 || 1; lo -= pad; hi += pad;
+  if (c.min != null && dataLo >= c.min) lo = Math.max(lo, c.min);
+  const L = 30, R = 6, T = 6, B = 16, x = t => L + (W-L-R)*(t-t0)/((t1-t0)||1), y = v => T + (H-T-B)*(1-(v-lo)/(hi-lo));
+  g.strokeStyle = "#1f2b44"; g.fillStyle = "#5f6d90"; g.font = "10px ui-monospace,monospace"; g.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) { const v = lo + (hi-lo)*i/3, yy = y(v); g.beginPath(); g.moveTo(L, yy); g.lineTo(W-R, yy); g.stroke(); g.fillText(v.toFixed(0), 2, yy+3); }
+  g.fillText(fmtT(t0), L, H-3); const lbl = fmtT(t1); g.fillText(lbl, W-R-g.measureText(lbl).width, H-3);
+  if (c.limit) { g.strokeStyle = "#ff4d6d"; g.setLineDash([4,4]); g.beginPath(); g.moveTo(L, y(c.limit)); g.lineTo(W-R, y(c.limit)); g.stroke(); g.setLineDash([]); }
+  (S.faults||[]).forEach(f => { if (f.start_s >= t0 && S.mode === "simulation") { g.strokeStyle = "#ff4d6d55"; g.beginPath(); g.moveTo(x(f.start_s), T); g.lineTo(x(f.start_s), H-B); g.stroke(); } });
+  c.series.forEach(([k,,col,m=1]) => {
+    g.strokeStyle = col; g.lineWidth = 2; g.shadowColor = col; g.shadowBlur = 6; g.beginPath(); let started = false;
+    hist.forEach(p => { if (p[k] == null) return; const X = x(p.t), Y = y(p[k]*m); started ? g.lineTo(X,Y) : g.moveTo(X,Y); started = true; });
+    g.stroke(); g.shadowBlur = 0;
+    const last = [...hist].reverse().find(p => p[k] != null); if (last) { g.fillStyle = col; g.beginPath(); g.arc(x(last.t), y(last[k]*m), 3, 0, 7); g.fill(); }
+  });
+}
+
+function renderStatus() {
+  const k = S.kpis, el = $("#status");
+  let cls = "ok", txt = "ALL SYSTEMS NOMINAL";
+  if (S.approvals.length) { cls = "appr"; txt = "AWAITING HUMAN APPROVAL"; }
+  else if (k.active) { cls = "bad"; txt = "INCIDENT · SELF-HEALING"; }
+  else if (k.racks_over_limit) { cls = "warn"; txt = "TEMPERATURE ABOVE LIMIT"; }
+  el.className = "status " + cls; el.querySelector("span").textContent = txt;
+}
+
+function notify() {
+  const k = S.kpis;
+  if (k.incidents > prev.incidents) { const i = S.incidents[0]; toast(`<b>🚨 Incident opened</b><br>${esc(LABEL[i.fault_type]||i.fault_type)} on ${esc(i.target)} → ${esc(i.playbook)}`, "var(--warn)"); beep(440); }
+  if (k.mitigated > prev.mitigated) { toast(`<b>✔ Mitigated and verified</b><br>no human input needed`, "var(--ok)"); beep(660); }
+  if (S.approvals.length > prev.approvals) { toast(`<b>⚠ Approval needed</b><br>a high-risk plan is waiting for you`, "var(--violet)"); beep(330); }
+  prev = {incidents: k.incidents, mitigated: k.mitigated, approvals: S.approvals.length};
+}
+
+async function tick() {
+  if (busy) return; busy = true;
+  try {
+    const s = await api("/api/state"); const first = !S; S = s;
+    $("#mode").textContent = s.mode === "simulation" ? "simulation · offline" : `live · ${s.info.stage} · ${s.info.region||""}`;
+    $("#mode").className = "badge " + (s.mode === "simulation" ? "sim" : "aws");
+    $("#clock").textContent = s.clock.label || "--:--:--";
+    $("#err").style.display = s.error ? "block" : "none"; $("#err").textContent = s.error || "";
+    if (first) { initCharts(); prev = {incidents: s.kpis.incidents, mitigated: s.kpis.mitigated, approvals: s.approvals.length}; }
+    renderKpis(s.kpis); renderHall(); renderInject(); renderApprovals(); renderIncidents(); renderStream(); renderStatus();
+    CHARTS.forEach(drawChart); if (!first) notify();
+  } catch (e) { $("#err").style.display = "block"; $("#err").textContent = "Connection lost: " + e; }
+  busy = false;
+}
+document.querySelectorAll("[data-speed]").forEach(b => b.onclick = () => api("/api/speed", {speed: Number(b.dataset.speed)}));
+$("#demo").onclick = async () => { const r = await api("/api/demo", {}); toast(`<b>▶ Guided demo started</b><br>${esc(r.message)}`, "var(--cyan)"); };
+$("#pause").onclick = () => api("/api/pause", {paused: !(S && S.info.paused)});
+$("#reset").onclick = async () => { if (confirm("Start a fresh data hall?")) { await api("/api/reset", {}); S = null; $("#kpis").innerHTML = ""; $("#hall").innerHTML = ""; incHtml = ""; apKey = "x"; $("#stream").dataset.keys = ""; toast("<b>⟲ New hall started</b>"); } };
+$("#sound").onclick = () => { sound = !sound; $("#sound").classList.toggle("on", sound); $("#sound").textContent = sound ? "🔊 Sound" : "🔈 Sound"; beep(520); };
+window.addEventListener("resize", () => S && CHARTS.forEach(drawChart));
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
