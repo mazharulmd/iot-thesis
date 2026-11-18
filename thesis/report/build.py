@@ -312,12 +312,14 @@ def build_docx(meta: dict, abstract: list[str], figures: list[tuple[str, int]], 
     put(0, 0, meta["field_of_study"], 1)
     put(2, 0, meta["degree_programme"], 1)
     put(4, 0, meta["author"])
-    put(6, 0, meta["title"] + (f": {meta['subtitle']}" if meta.get("subtitle") else ""))
+    put(6, 0, meta["title"] + (f" – {meta['subtitle']}" if meta.get("subtitle") else ""))
     put(7, 1, meta["date"])
     put(7, 3, pages)
     put(9, 0, meta["client"])
     cell = t.cell(10, 0)
     first = cell.paragraphs[0]
+    for extra in cell.paragraphs[1:]:                           # template leftovers
+        extra._p.getparent().remove(extra._p)
     for r in list(first.runs):
         r._r.getparent().remove(r._r)
     template_p = copy.deepcopy(first._p)

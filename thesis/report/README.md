@@ -36,7 +36,15 @@ Placeholders are highlighted in yellow in the .docx/.pdf.
 - [ ] **Step 8 (real AWS):** run `make aws-deploy aws-check aws-loadtest aws-cost aws-bill` and fill
       in the placeholders in `00-front.md` (abstract), `07-results.md` (Section 7.8 and Table 17,
       H6–H8) and `08-discussion.md` (RQ3, reliability).
-- [ ] **Cover and abstract fields** in `00-front.md`: field of study, degree programme, date.
+- [ ] **Abstract page** (Savonia abstract instructions): fill in the degree programme and the date
+      (month in full, e.g. March 31, 2027); check the field of study (set to Technology, Communication
+      and Transport); keep the abstract at about 200 words when the Step 8 sentence is added, in the
+      passive voice and simple past; ask the English teacher to proofread it at least a week before
+      submission.
+- [ ] **Title:** the instructions recommend at most about 10 words. The registered title has 15, so
+      it is written with only the first letter capitalised (the rule for long titles). A shorter
+      option, if the supervisor agrees to change it: *Serverless AWS IoT Framework for Self-Healing
+      Data Center Infrastructure* (9 words).
 - [ ] **Your own voice:** Sections 8.4 (use of AI) and 8.7 (thesis process and professional
       growth) describe your process and learning; rewrite them so they are accurate for you.
 - [ ] **Supervisor's preferences:** whether main chapters start with introductory text or
