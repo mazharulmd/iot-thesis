@@ -9,6 +9,7 @@ Infrastructure** (Bachelor's thesis, Savonia University of Applied Sciences, Maz
 | [proposal.pdf](proposal.pdf) · [proposal.docx](proposal.docx) | The same proposal as PDF and Word |
 | [proposal-2page.md](proposal-2page.md) · [proposal-2page.pdf](proposal-2page.pdf) · [proposal-2page.docx](proposal-2page.docx) | Two-page proposal for Savonia (Harvard references, Figure 1 = [figure1-architecture.png](figure1-architecture.png)); the PDF is the two-page reference layout |
 | [methodology.md](methodology.md) | Methodology and evaluation criteria: DSR design, hypotheses H1–H8 with pass criteria, protocol, validity (also a live doc in Claude) |
+| [thesis.pdf](thesis.pdf) · [thesis.docx](thesis.docx) · [report/](report/) | The thesis report in the Savonia template, built from the Markdown chapters in `report/` (see [report/README.md](report/README.md)) |
 | [thesis-topic-proposal.docx](thesis-topic-proposal.docx) · [registration-form.md](registration-form.md) | Topic proposal form answers (Word is the master; the .md is a text copy) |
 | This file | Where each research question and chapter gets its evidence, what changed since the proposal, and what is left |
 
@@ -36,7 +37,7 @@ re-exported into this folder, so this repository is the single source for the wh
 | 7 | Experiments E1, M1 sensitivity, E4 (1,400 runs on the OCI server) | Done |
 | 7.1 | E5 severity sweep (720 runs) and CloudWatch dashboard | Built; E5 to run (`make e5`) |
 | 8 | Real AWS in ap-south-1: end-to-end check, E2 load test, E3 cost, dashboard | Built; to run ([docs/aws.md](../docs/aws.md)) |
-| 9 | Thesis writing, figures, supervisor review | To do |
+| 9 | Thesis writing, figures, supervisor review | Full draft in `report/`; Step 8 results and front-page fields to fill in |
 
 ## Research questions → evidence
 
