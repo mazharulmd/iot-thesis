@@ -11,6 +11,7 @@
 3. Release all asset locks and clear the guardrail state (rate limits, circuit breakers):
    incidents from an earlier run own nothing in a new one.
 4. Drop shadow commands still queued for the bridge from an earlier run.
+5. On AWS (make aws-reset), clear the device shadows in IoT Core for the same reason.
 """
 from __future__ import annotations
 
@@ -83,6 +84,12 @@ def prepare(stage: str = "local", keep_hours: float = 2.0) -> dict:
         result["guardrail_entries_cleared"] = len(items)
     if "ShadowQueueUrl" in out:
         result["queued_shadow_commands_dropped"] = drain_queue(sess.client("sqs"), out["ShadowQueueUrl"])
+    if stage != "local":
+        # On AWS the shadows live in IoT Core: clear the commands of earlier runs, or a gateway would
+        # apply them on connect (e.g. UPS 1 left at zero load by an approval demo).
+        from .shadow_api import Shadows
+        Shadows(stage, sess).reset()
+        result["shadows_cleared"] = "yes"
     return result
 
 
