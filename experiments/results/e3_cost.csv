@@ -1,4 +1,4 @@
 size,halls,gateways,messages,list_total,after_free,ddb_on_demand_requests,ddb_provisioned,ddb_provisioned_after_free
-small (1 hall),1,5,1296000,6.29,4.72,2.75,1.61,0.0
-medium (10 halls),10,50,12960000,62.94,49.03,27.54,12.34,0.0
-large (100 halls),100,500,129600000,629.42,613.68,275.4,121.0,106.76
+small (1 hall),1,5,1296000,4.98,3.75,1.78,1.04,0.0
+medium (10 halls),10,50,12960000,49.83,39.3,17.81,7.88,0.0
+large (100 halls),100,500,129600000,498.3,482.56,178.09,78.29,64.06

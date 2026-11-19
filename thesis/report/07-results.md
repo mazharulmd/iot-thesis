@@ -162,23 +162,24 @@ Table 17. Load test on AWS (eu-north-1): 30 minutes per level, one message per g
 
 At the measured average detector duration of 29 milliseconds, 10,000 gateways (1,000 messages per second) would need about 29 concurrent executions. Scaling the measured peak linearly gives about 215, which is a conservative bound and still within the limit of 400. The full results are in experiments/results/e2_summary.md.
 
-**Measured cost.** [Step 8, to be completed: the cost model with the usage measured in the load test, and the measured AWS bill. Source files: experiments/results/e3_cost.md, e3_measured.md.]
+**Cost.** Table 18 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and the usage per message measured in the load test at 2,000 gateways: an average detector run of 29 milliseconds with 512 MB of memory, one write unit per message in each of the two tables written and about one read unit per history query. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
 
-**Cost model.** Table 18 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
-
-Table 18. Estimated monthly AWS cost (USD, list prices, default usage figures)
+Table 18. Estimated monthly AWS cost (USD, list prices, usage measured in the load test)
 
 | Service | 1 hall | 10 halls | 100 halls |
 | --- | --- | --- | --- |
 | IoT Core (messages, rule, actions, shadows) | 1.90 | 18.97 | 189.66 |
-| Lambda (detector and remediation) | 0.91 | 9.07 | 90.73 |
-| DynamoDB on demand | 3.24 | 32.40 | 324.00 |
+| Lambda (detector and remediation) | 0.57 | 5.69 | 56.93 |
+| DynamoDB on demand (requests and storage) | 2.27 | 22.67 | 226.69 |
 | Step Functions, EventBridge, SNS | 0.01 | 0.10 | 0.99 |
 | CloudWatch Logs | 0.24 | 2.40 | 24.04 |
-| Total | 6.29 | 62.94 | 629.42 |
-| Per rack | 0.32 | 0.32 | 0.32 |
+| Total | 4.98 | 49.83 | 498.30 |
+| Total after the always-free allowances | 3.75 | 39.30 | 482.56 |
+| Per rack | 0.25 | 0.25 | 0.25 |
 
-DynamoDB was the largest item. With provisioned capacity sized to the load instead of on-demand billing, the DynamoDB request cost of one hall fell from $2.75 to $1.61 per month, and within the always-free capacity it fell to zero for up to ten halls. Remediation itself, the Step Functions workflow and the notifications, cost almost nothing, because faults are rare compared with telemetry messages.
+One hall with 20 racks would cost about $5 a month at list price, or $0.25 per rack, and the cost grows linearly with the number of halls. With the default usage figures used before the load test, the model had estimated $0.32 per rack; the measured detector runs were shorter than assumed. DynamoDB was the largest item. With provisioned capacity sized to the load instead of on-demand billing, the DynamoDB request cost of one hall fell from $1.78 to $1.04 per month, and within the always-free capacity it fell to zero for up to ten halls. Remediation itself, the Step Functions workflow and the notifications, cost almost nothing, because faults are rare compared with telemetry messages.
+
+[Step 8, to be completed: the measured AWS bill for the test period compared with the cost model (Cost Explorer, make aws-bill). Source file: experiments/results/e3_measured.md.]
 
 ## Summary of the hypotheses
 
@@ -195,4 +196,4 @@ Table 19. Outcome of the hypotheses
 | H5 | Guardrails keep automation safe | 0 wrong actions in all 2,120 runs; every guardrail tested; approval shown end to end on the local stack and on AWS | Pass (criterion post hoc) |
 | H6 | The cloud path adds only seconds | AWS live check: 2.4 s from sensor message to first command; load test: gateway to detector p95 ≤ 100 ms at up to 2,000 gateways | Pass |
 | H7 | The design scales | 50, 500, 2,000 gateways: p95 ≤ 100 ms, all messages processed, 0 throttles; peak 43 of 400 concurrent Lambdas | Pass |
-| H8 | Running cost is small | Model with default usage: $0.32 per rack per month | Open (measured bill) |
+| H8 | Running cost is small | Model with measured usage: $0.25 per rack per month | Pass on cost per rack; bill comparison open |

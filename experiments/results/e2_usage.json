@@ -1,0 +1,11 @@
+{
+  "source": "measured on AWS, 2000 gateways",
+  "detector_ms": 28.7,
+  "detector_mb": 512,
+  "telemetry_wru": 1.0,
+  "stats_wru": 1.0,
+  "history_rru": 0.993,
+  "log_bytes_per_invocation": 350,
+  "item_kb": 1.5,
+  "retention_days": 30
+}
