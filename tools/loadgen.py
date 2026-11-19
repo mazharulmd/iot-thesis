@@ -101,6 +101,42 @@ class Connection(threading.Thread):
         self.client.disconnect()
 
 
+def _mmss(sec: float) -> str:
+    sec = max(0, int(sec))
+    return f"{sec // 60:02d}:{sec % 60:02d}"
+
+
+def wait_with_progress(label: str, seconds: float, conns=(), width: int = 30) -> None:
+    """Sleep for `seconds`, showing a progress bar with the messages sent so far.
+
+    On a terminal the bar is redrawn in place every second; when the output goes to a file or pipe,
+    a plain line is written every 5 minutes instead.
+    """
+    tty = sys.stdout.isatty()
+    start = time.time()
+    end, last = start + seconds, 0.0
+
+    def line(now: float) -> str:
+        frac = min(1.0, (now - start) / seconds) if seconds else 1.0
+        bar = "#" * int(frac * width) + "-" * (width - int(frac * width))
+        text = f"  {label:<10s} [{bar}] {100 * frac:3.0f}%  {_mmss(now - start)} / {_mmss(seconds)}"
+        if conns:
+            sent, failed = sum(c.sent for c in conns), sum(c.failed for c in conns)
+            text += f"  sent {sent:,}" + (f"  failed {failed:,}" if failed else "")
+        return text
+
+    while True:
+        now = time.time()
+        if now >= end:
+            break
+        if tty or now - last >= 300:
+            print("\r" + line(now) if tty else line(now), end="" if tty else "\n", flush=True)
+            last = now
+        time.sleep(min(1.0, end - now))
+    if tty:
+        print("\r" + line(end), flush=True)
+
+
 def stats_snapshot(table, prefix: str) -> dict:
     snap = {k: 0.0 for k in SUMS}
     hist: dict[str, int] = {}
@@ -150,11 +186,10 @@ def run_level(n: int, minutes: float, warmup: float, per_conn: int, sess, out: d
         sys.exit("could not connect all load-generator connections to IoT Core")
     for c in conns:
         c.start()
-    print(f"  {n} gateways on {len(conns)} connections; warm-up {warmup:g} min ...", flush=True)
-    time.sleep(warmup * 60)
+    print(f"  {n} gateways on {len(conns)} connections", flush=True)
+    wait_with_progress("warm-up", warmup * 60, conns)
     a, sent_a, t0 = stats_snapshot(stats, prefix), sum(c.sent for c in conns), datetime.now(timezone.utc)
-    print(f"  measuring {minutes:g} min ...", flush=True)
-    time.sleep(minutes * 60)
+    wait_with_progress("measuring", minutes * 60, conns)
     b, sent_b, t1 = stats_snapshot(stats, prefix), sum(c.sent for c in conns), datetime.now(timezone.utc)
     stop.set()
     for c in conns:
@@ -169,8 +204,7 @@ def run_level(n: int, minutes: float, warmup: float, per_conn: int, sess, out: d
         elif time.time() - still >= 15:
             break
     drain_s = max(0.0, still - drain_t0)
-    print("  waiting 2 min for CloudWatch metrics ...", flush=True)
-    time.sleep(120)
+    wait_with_progress("metrics", 120)          # CloudWatch needs about 2 min to publish
 
     fn = {"FunctionName": out["DetectorFunctionName"]}
     tables = [out["TelemetryTableName"], out["IngestStatsTableName"]]
@@ -266,8 +300,9 @@ def main() -> None:
     RESULTS.mkdir(parents=True, exist_ok=True)
     events.disable_rule(**rule_args)
     try:
-        for n in levels:
-            print(f"level {n} gateways:", flush=True)
+        for i, n in enumerate(levels, 1):
+            left = (len(levels) - i + 1) * (args.warmup + args.minutes + 3)
+            print(f"level {i}/{len(levels)}: {n} gateways (about {left:.0f} min left in the test)", flush=True)
             row = run_level(n, args.minutes, args.warmup, args.per_connection, sess, out, tmpl, host)
             rows.append(row)
             new = not (RESULTS / "e2_runs.csv").exists()
