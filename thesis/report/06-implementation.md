@@ -1,6 +1,6 @@
 # Implementation
 
-This chapter describes the framework that was built: its overall architecture, the simulated data hall and its faults, the telemetry pipeline, the detection layer, the remediation playbooks and guardrails, and the way the system was tested. The source code, about 8,000 lines of Python excluding tests, is published in a public Git repository.
+This chapter describes the framework that was built: its overall architecture, the simulated data hall and its faults, the telemetry pipeline, the detection layer, the remediation playbooks and guardrails, the way the system was tested, and its deployment on AWS with the live control-room dashboard. The source code, about 8,000 lines of Python excluding tests, is published in a public Git repository.
 
 ## Overall architecture
 
@@ -141,7 +141,49 @@ Rollback was defined per playbook stage. Where undoing a change would be less sa
 
 Running hundreds of experiments through a cloud deployment would have been slow and costly. The experiments were therefore run in an *offline closed loop*: the simulator, the detection engine, the deployed state-machine definition executed by a small interpreter for the Amazon States Language, and the real remediation and approval function code, all in one process with mocked AWS services. A subset of runs was repeated on the live local stack to check that the offline results carry over. With the offline loop, the 1,400 runs of the first experiment batch took about 49 minutes with seven parallel workers.
 
-The code was covered by 122 unit tests. They check, among other things, the energy balance of the simulator, the shapes of the faults, the equivalence of the exported models, the diagnosis rules, every playbook stage, and every guardrail: that approved plans are rechecked before acting, that rejected and expired requests send nothing, that a failed stage is rolled back, that two failures open the circuit breaker, that a fourth incident within an hour is blocked, and that an approval link can be used only once. GitHub Actions ran the tests, built the detector package and synthesised the CDK application on every change.
+The code was covered by 131 unit tests. They check, among other things, the energy balance of the simulator, the shapes of the faults, the equivalence of the exported models, the diagnosis rules, every playbook stage, and every guardrail: that approved plans are rechecked before acting, that rejected and expired requests send nothing, that a failed stage is rolled back, that two failures open the circuit breaker, that a fourth incident within an hour is blocked, and that an approval link can be used only once. GitHub Actions ran the tests, built the detector package and synthesised the CDK application on every change.
+
+## Deployment on AWS
+
+The framework was deployed to AWS from an Amazon EC2 instance in the Stockholm region, which also ran the simulated gateways during the live tests. The instance accessed AWS through an IAM role, so no access keys were stored on it. After a one-time bootstrap of the CDK, one command created the six stacks in about six and a half minutes (Figure 4), and a second command created the X.509 certificate of the gateways and attached the device policy to it.
+
+![CloudFormation stacks](figures/aws-stacks.png)
+
+Figure 4. The six stacks of the framework in the AWS CloudFormation console (CDKToolkit is created by the CDK bootstrap)
+
+Figure 5 shows the telemetry topic rule in IoT Core. The rule selects every message published to the topic dc/hall1/+/telemetry, adds the time at which IoT Core received it and an expiry time 30 days later, and passes the message to two actions: the DynamoDB telemetry table and the detector function. The messages arriving from the gateways could be followed in the MQTT test client of the IoT Core console (Figure 6). Each message carries the readings of all assets of one zone.
+
+![IoT Core topic rule](figures/aws-iot-rule.png){width=14}
+
+Figure 5. Telemetry topic rule in AWS IoT Core: SQL statement and the two actions
+
+![MQTT test client](figures/aws-mqtt-client.png){width=11}
+
+Figure 6. A telemetry message from the zone 3 gateway in the MQTT test client of AWS IoT Core
+
+Figure 7 shows the remediation state machine as deployed in AWS Step Functions, with the path of one execution highlighted. The deployed definition is the one shown in Figure 3; the CDK generated it from the same code that the offline closed loop interprets. In the highlighted execution, the detector had reported an anomaly that matched no fault signature, so the workflow only notified the operators.
+
+![Step Functions state machine](figures/aws-step-functions.png)
+
+Figure 7. Remediation state machine in AWS Step Functions with an execution for an unexplained anomaly, which ended in a notification
+
+To demonstrate the framework and to follow the live tests, a control-room dashboard was implemented as a small web application. It shows the data hall as a floor plan with the rack inlet temperatures and the state of the cooling and power equipment, trend charts, the anomalies confirmed by the detector, each incident with its playbook steps, the commands sent through the device shadows and the alerts sent to people. A high-risk plan appears with Approve and Reject buttons, which call the approval function with the same one-time checks as the email link. The dashboard only reads the tables that the pipeline already writes, so it adds no component to the cloud path, and it can be connected to the offline simulation, the local stack or the deployment on AWS. When it is opened from outside the server, every request must carry a random access token.
+
+Figures 8 and 9 show the dashboard connected to AWS while the CRAH failure scenario was run. Figure 8 was taken shortly after CRAH 2 had stopped: the inlet temperatures of zone 2 had risen to about 32 °C, and the cooling failover playbook had boosted the neighbouring units and started the standby unit. Figure 9 shows the same hall after the playbook had verified the recovery and closed the incident, 0.7 minutes after it was opened, without human input. CRAH 2 remains marked as failed, because only a technician can repair it; the incident created a repair ticket for that. The gateways ran at five times real speed in this demonstration, so the anomaly times in the event stream follow the simulated clock of the gateways and lie a few minutes after the wall-clock times of the commands and emails.
+
+![Dashboard during the fault](figures/aws-dashboard-fault.png)
+
+Figure 8. Live dashboard connected to AWS during a CRAH fan failure: zone 2 above the 27 °C limit while the cooling failover playbook acts
+
+![Dashboard after mitigation](figures/aws-dashboard-mitigated.png)
+
+Figure 9. The same dashboard after the incident was mitigated and verified, with the standby unit CRAH 5 serving zone 2
+
+High-risk plans were sent to people by email through Amazon SNS (Figure 10). The message lists the plan and the commands it would send, the time after which the request expires, and a one-time link that opens the plan with buttons to approve or reject it. Further screenshots of the deployment are in Appendix 3.
+
+![Approval email](figures/aws-approval-email.png){width=13}
+
+Figure 10. Approval request for the UPS load transfer, sent by email through Amazon SNS
 
 ## Deviations from the plan
 

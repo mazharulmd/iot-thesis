@@ -10,7 +10,7 @@ and the Pages/Appendices field filled in.
 
 Markdown conventions: '#' main chapter (numbered by the template), '##' / '###' subchapters,
 '# References' and '# Appendix N: ...' unnumbered; a line 'Table N. ...' before a table is its
-title; '![alt](figures/x.png)' followed by 'Figure N. ...' is a figure and its caption;
+title; '![alt](figures/x.png)' (optionally '{width=10}' in cm) followed by 'Figure N. ...' is a figure and its caption;
 '- ' bullet lists; **bold**, *italic*, `code`; text in [square brackets] that starts with a
 capital letter and spans a whole paragraph or sentence is highlighted as a to-do.
 
@@ -227,8 +227,9 @@ def add_chapter(d, path: Path) -> None:
         elif line.startswith("!["):
             flush()
             src = re.search(r"\(([^)]+)\)", line).group(1)
+            w = re.search(r"\{width=([\d.]+)\}", line)          # optional width in cm
             p = d.add_paragraph(style=S(d, "Normal1"))
-            p.add_run().add_picture(str(HERE / src), width=FIGURE_WIDTH)
+            p.add_run().add_picture(str(HERE / src), width=Cm(float(w.group(1))) if w else FIGURE_WIDTH)
             p.paragraph_format.space_after = Pt(2); keep_with_next(p)
         elif re.match(r"^Figure \d+\. ", line):
             flush(); p = d.add_paragraph(style=S(d, "Caption")); add_runs(p, line)

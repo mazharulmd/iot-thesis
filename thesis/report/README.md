@@ -8,7 +8,7 @@ template. The outputs are [`../thesis.docx`](../thesis.docx) and [`../thesis.pdf
 | `00-front.md` | Title, cover and abstract-page fields (YAML block) and the abstract |
 | `01-introduction.md` … `08-discussion.md` | Chapters 1–8 |
 | `09-references.md` | References (Savonia Harvard style) and the AI-use entry |
-| `10-appendix-1.md`, `11-appendix-2.md` | Appendices |
+| `10-appendix-1.md` … `12-appendix-3.md` | Appendices (3: screenshots of the AWS deployment) |
 | `figures/` | Figures used in the report |
 | `build.py` | Builds the .docx and .pdf from the files above |
 
