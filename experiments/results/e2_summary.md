@@ -13,4 +13,7 @@ the window edges.
 Extrapolation to 10,000 gateways (1,000 messages/s): the detector needs about 29 concurrent executions at the measured average duration of 29 ms (concurrency = rate x duration); this account allows 400.
 Scaling the measured peak concurrency (43 at 2,000 gateways) linearly instead gives about 215, a conservative bound because the peak includes bursts and container start-ups.
 
-Messages sent: 9,901 (50), 99,010 (500) and 396,080 (2,000) in the measured windows.
+Messages sent in the measured windows: 9,000 (50), 90,000 (500) and 360,080 (2,000); processed 9,000, 90,010
+and 360,044. Mean latency 77.5, 77.5 and 82.0 ms. Backlog after stopping drained within 5 s at every level.
+Per message: 2.0 write units (Telemetry + IngestStats) and 0.99 read units. All rows, including a first
+50-gateway run from an earlier attempt with the same percentiles, are in e2_runs.csv.
