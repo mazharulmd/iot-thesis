@@ -14,7 +14,7 @@ AWS_REGION ?= $(AWS_DEFAULT_REGION)
 export AWS_DEFAULT_REGION AWS_REGION
 export AWS_ENVAR_ALLOWLIST := AWS_REGION,AWS_DEFAULT_REGION
 
-.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-cost aws-bill aws-destroy experiments e1 e5 analysis live-experiment latency warm dashboard dashboard-local dashboard-aws
+.PHONY: help venv test up down logs status deploy-local destroy-local smoke clean-local sim sim-all pipeline-up pipeline-down status-pipeline cmd e2e reset-shadows train evaluate skab build-lambdas events remove-step3-stack incidents incident locks reset-locks playbook playbook-eval approvals approve reject guardrails reset-breaker e2e-approval aws-login aws-whoami aws-bootstrap aws-deploy aws-devices aws-check aws-loadtest aws-reset aws-demo aws-cost aws-bill aws-destroy experiments e1 e5 analysis live-experiment latency warm dashboard dashboard-local dashboard-aws
 
 help:          ## List available commands
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-15s %s\n",$$1,$$2}'
@@ -230,6 +230,13 @@ dashboard-local: ## Live dashboard of the LocalStack stack
 
 dashboard-aws: ## Live dashboard of the stack on AWS:  make dashboard-aws [HOST=0.0.0.0]
 	$(AWSENV) $(PY) -m dashboard --stage $(AWS_STAGE) --host $(or $(HOST),127.0.0.1)
+
+aws-reset:     ## Clear locks/old incidents on AWS before a new demo
+	$(AWSENV) $(PY) -m tools.prepare_run --stage $(AWS_STAGE)
+
+aws-demo:      ## Live gateways on AWS with a fault:  make aws-demo [SCENARIO=crah|ups|normal] [DEMO_SPEED=5]
+	$(AWSENV) $(PY) -m simulator.live --aws-certs certs --speed $(or $(DEMO_SPEED),5) \
+	  --scenario simulator/scenarios/$(if $(filter ups,$(SCENARIO)),e2e_ups_overheat,$(if $(filter normal,$(SCENARIO)),normal,e2e_crah_failure)).yaml
 
 aws-cost:      ## E3 cost model (uses e2_usage.json from the load test if present)
 	$(PY) -m experiments.cost_model

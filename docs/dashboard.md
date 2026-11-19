@@ -46,14 +46,11 @@ IngestStats table (pipeline latency). A poll every 3 s costs a few cents a day w
 Approve / Reject goes through the approval Lambda with the same one-time nonce checks as the email link.
 
 ```bash
-make dashboard-aws                                            # terminal 1
-.venv/bin/python -m simulator.live --aws-certs certs --speed 5 \
-  --scenario simulator/scenarios/e2e_crah_failure.yaml        # terminal 2: CRAH 2 fails after 1 minute
+make dashboard-aws                 # terminal 1
+make aws-demo SCENARIO=crah        # terminal 2: CRAH 2 fails after 1 minute (SCENARIO=ups: approval flow)
 ```
 
-`e2e_ups_overheat.yaml` shows the approval flow. Run `python -m tools.prepare_run --stage dev` (with
-the AWS profile, see [aws.md](aws.md)) between demos so old locks do not group a new fault into an
-earlier incident.
+Run `make aws-reset` between demos so old locks do not group a new fault into an earlier incident.
 
 ## On an EC2 instance or a remote server
 
