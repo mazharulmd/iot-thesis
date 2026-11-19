@@ -81,6 +81,7 @@ def test_cost_model_scales_and_free_tier():
 def test_shadows_on_aws_use_the_iot_data_api(monkeypatch):
     from tools.shadow_api import Shadows
     monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    monkeypatch.setattr("socket.getaddrinfo", lambda *a, **k: [])   # moto's IoT endpoint is not in DNS
     for k, v in {"AWS_DEFAULT_REGION": REGION, "AWS_ACCESS_KEY_ID": "x", "AWS_SECRET_ACCESS_KEY": "x"}.items():
         monkeypatch.setenv(k, v)
     with mock_aws():
@@ -102,6 +103,7 @@ def test_shadows_on_aws_use_the_iot_data_api(monkeypatch):
 def test_device_certificate_create_and_delete(tmp_path, monkeypatch):
     from tools.aws_devices import create, delete
     monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    monkeypatch.setattr("socket.getaddrinfo", lambda *a, **k: [])   # moto's IoT endpoint is not in DNS
     for k, v in {"AWS_DEFAULT_REGION": REGION, "AWS_ACCESS_KEY_ID": "x", "AWS_SECRET_ACCESS_KEY": "x"}.items():
         monkeypatch.setenv(k, v)
     with mock_aws():
@@ -158,3 +160,24 @@ def test_monitoring_dashboard_covers_the_pipeline(tmp_path):
     # inside CloudWatch's always-free allowance: at most 50 metrics per dashboard
     assert 20 <= body.count('\\"AWS/') <= 50
     t.has_output("DashboardUrl", Match.any_value())
+
+
+def test_iot_endpoint_waits_until_dns_resolves(monkeypatch, capsys):
+    import socket
+    from common.awsenv import iot_data_endpoint
+    monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    for k, v in {"AWS_DEFAULT_REGION": REGION, "AWS_ACCESS_KEY_ID": "x", "AWS_SECRET_ACCESS_KEY": "x"}.items():
+        monkeypatch.setenv(k, v)
+    calls = []
+
+    def resolve(host, port):
+        calls.append(host)
+        if len(calls) < 3:
+            raise socket.gaierror(-2, "Name or service not known")
+        return []
+    monkeypatch.setattr("socket.getaddrinfo", resolve)
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    with mock_aws():
+        host = iot_data_endpoint(boto3.Session(region_name=REGION))
+    assert len(calls) == 3 and calls[0] == host
+    assert "resolves now" in capsys.readouterr().out

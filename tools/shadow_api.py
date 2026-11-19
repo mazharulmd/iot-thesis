@@ -10,6 +10,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 
+from common.awsenv import iot_data_endpoint
 from common.topology import GATEWAYS, gateway_of
 
 from .reset_shadows import reset as reset_local
@@ -21,7 +22,7 @@ class Shadows:
         self.stage = stage
         self.iot = None
         if stage != "local":
-            host = sess.client("iot").describe_endpoint(endpointType="iot:Data-ATS")["endpointAddress"]
+            host = iot_data_endpoint(sess)
             self.iot = sess.client("iot-data", endpoint_url=f"https://{host}")
 
     def reset(self) -> None:

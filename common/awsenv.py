@@ -37,3 +37,34 @@ def stack_outputs(sess: boto3.Session, stage: str, stacks=STACKS) -> dict:
     if not found:
         raise RuntimeError(f"no DcSelfheal-{stage}-* stacks deployed")
     return out
+
+
+def iot_data_endpoint(sess: boto3.Session, wait_s: float = 900.0) -> str:
+    """The account's IoT Core data endpoint (ATS), once its DNS name resolves.
+
+    The first describe_endpoint call in a new account or region creates the endpoint, and its DNS
+    name can take several minutes (sometimes up to about 15) to become resolvable; until then every
+    call fails with 'Name or service not known'. Wait for it instead of failing.
+    """
+    import socket
+    import time
+
+    host = sess.client("iot").describe_endpoint(endpointType="iot:Data-ATS")["endpointAddress"]
+    if os.environ.get("AWS_ENDPOINT_URL"):           # LocalStack: no DNS to wait for
+        return host
+    deadline, said = time.time() + wait_s, False
+    while True:
+        try:
+            socket.getaddrinfo(host, 443)
+            if said:
+                print(f"{host} resolves now.", flush=True)
+            return host
+        except socket.gaierror:
+            if time.time() > deadline:
+                raise RuntimeError(f"IoT endpoint {host} still does not resolve after {wait_s:.0f} s; "
+                                   "try again later")
+            if not said:
+                print(f"Waiting for the new IoT Core endpoint {host} to appear in DNS "
+                      "(first use in this region; can take up to ~15 min) ...", flush=True)
+                said = True
+            time.sleep(15)

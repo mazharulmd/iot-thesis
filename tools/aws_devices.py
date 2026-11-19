@@ -20,14 +20,14 @@ import sys
 import urllib.request
 from pathlib import Path
 
-from common.awsenv import session, stack_outputs
+from common.awsenv import iot_data_endpoint, session, stack_outputs
 
 CERTS = Path(__file__).resolve().parents[1] / "certs"
 ROOT_CA_URL = "https://www.amazontrust.com/repository/AmazonRootCA1.pem"
 
 
 def endpoint(sess) -> str:
-    return sess.client("iot").describe_endpoint(endpointType="iot:Data-ATS")["endpointAddress"]
+    return iot_data_endpoint(sess)
 
 
 def create(sess, policy: str, folder: Path = CERTS, fetch_ca=None) -> dict:
