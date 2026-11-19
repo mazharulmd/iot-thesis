@@ -99,9 +99,11 @@ class AwsSource:
         if self.detections is not None:
             day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             items = self.detections.query(KeyConditionExpression=Key("day").eq(day), ScanIndexForward=False,
-                                          Limit=50).get("Items", [])
+                                          Limit=200).get("Items", [])
             for e in sorted((plain(i) for i in items), key=lambda e: e["id"]):
                 if e["id"] in self._seen_events or _epoch(e["ts"]) < self.since.timestamp():
+                    continue
+                if e.get("gw") and e["gw"] not in GATEWAYS:    # load-test virtual gateways
                     continue
                 self._seen_events.add(e["id"])
                 st.add_event({**e, "t": _epoch(e["ts"])})
@@ -136,5 +138,7 @@ class AwsSource:
         st.set_commands(sorted(commands, key=lambda c: c["t"], reverse=True))
 
         if self.stats is not None:
-            lat = [float(i["last_latency_ms"]) for i in self.stats.scan().get("Items", []) if "last_latency_ms" in i]
+            # Only the hall's own gateways: the table also keeps the load test's virtual gateways.
+            items = [self.stats.get_item(Key={"gw": gw}).get("Item") or {} for gw in GATEWAYS]
+            lat = [float(i["last_latency_ms"]) for i in items if "last_latency_ms" in i]
             st.latency_ms = round(sorted(lat)[len(lat) // 2], 1) if lat else None

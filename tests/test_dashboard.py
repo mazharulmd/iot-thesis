@@ -147,6 +147,9 @@ def test_aws_source_reads_the_deployed_tables(monkeypatch):
                        "plan": {"stages": [{"name": "transfer", "commands": {"ups1": {"load_share": 0}}}]}})
     inc.put_item(Item={"id": "i1", "sk": "L#" + now + "#00001", "step": "opened", "at": now})
     stats.put_item(Item={"gw": "zone1", "last_latency_ms": 120})
+    stats.put_item(Item={"gw": "lg-2000-00001", "last_latency_ms": 9999})     # load-test gateway: ignored
+    det.put_item(Item={"day": now[:10], "id": f"{now}#lg#unexplained", "ts": now, "fault_type": "unexplained",
+                       "target": "rack01", "asset": "rack01", "gw": "lg-2000-00001"})
 
     monkeypatch.setattr(aws, "session", lambda stage: boto3.Session(region_name="eu-north-1"))
     monkeypatch.setattr(aws, "stack_outputs", lambda sess, stage: {
@@ -156,7 +159,7 @@ def test_aws_source_reads_the_deployed_tables(monkeypatch):
     src.poll()
     snap = st.snapshot()
     assert snap["gateways"]["zone1"]["seq"] == 5
-    assert snap["events"][0]["fault_type"] == "crah_fan_failure"
+    assert [e["fault_type"] for e in snap["events"]] == ["crah_fan_failure"]
     assert snap["approvals"][0]["incident"] == "i1" and snap["approvals"][0]["commands"] == {"ups1": {"load_share": 0}}
     assert snap["kpis"]["latency_ms"] == 120.0 and snap["kpis"]["awaiting"] == 1
     with pytest.raises(ValueError):
