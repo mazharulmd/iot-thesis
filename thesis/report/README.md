@@ -33,9 +33,11 @@ title; `![…](figures/x.png)` followed by `Figure N. …` is a figure and its c
 
 Placeholders are highlighted in yellow in the .docx/.pdf.
 
-- [ ] **Step 8 (real AWS):** run `make aws-deploy aws-check aws-loadtest aws-cost aws-bill` and fill
-      in the placeholders in `00-front.md` (abstract), `07-results.md` (Section 7.8 and Table 17,
-      H6–H8) and `08-discussion.md` (RQ3, reliability).
+- [ ] **Step 8 (real AWS):** deploy, live check and load test are done and written in (Section 7.8,
+      Table 17, H5–H7). Still to do: `make aws-cost` (cost model with the measured usage) and, a day
+      later, `make aws-bill START=2026-11-19`; then fill the cost placeholders in `00-front.md`
+      (abstract), `07-results.md` (Table 18, measured cost, H8) and `08-discussion.md`. Run
+      `make aws-destroy` when all measurements are finished.
 - [ ] **Abstract page** (Savonia abstract instructions): fill in the degree programme and the date
       (month in full, e.g. March 31, 2027); check the field of study (set to Technology, Communication
       and Transport); keep the abstract at about 200 words when the Step 8 sentence is added, in the

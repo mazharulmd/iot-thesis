@@ -150,11 +150,23 @@ The latency from a fault to the first corrective command was dominated by detect
 
 **Live check on AWS.** The stack was deployed to AWS in the Stockholm region, and the end-to-end check was run with the simulated gateways connected to IoT Core over MQTT from an EC2 instance in the same region, at ten times the real message rate. Both scenarios passed every check. When CRAH 2 failed, the detector published the anomaly 30 simulated seconds after the fault, the cooling failover playbook started the standby unit and handed the zone back to automatic control without human input, and all rack inlets in the zone stayed below 27 °C (at most 20.8 °C). The time from the sensor message that confirmed the fault to the first command arriving at the gateway was 2.4 seconds, which covers detection, the decision in the state machine and the command through the device shadow. From a gateway publishing a message to the end of the detector run, the mean latency was 85 milliseconds and the 95th percentile at most 150 milliseconds; most of it was queueing, and detection itself took about 6 milliseconds. A shadow command made the round trip to the gateway in 254 milliseconds. In the second scenario, the UPS overheating plan waited for approval without sending any command, the email link opened the plan without deciding anything, the approval was accepted once and refused the second time, and the load was transferred to the second UPS only after the plan had been rechecked on fresh telemetry. The full output is in experiments/results/aws_e2e_check.md.
 
-**Load test and measured cost.** [Step 8, to be completed after the load test: latency from sensor message to first command (p50, p95, p99) and messages processed and Lambda throttles at 50, 500 and 2,000 gateways; and the measured AWS bill. Source files: experiments/results/e2_summary.md, e3_measured.md.]
+**Load test.** Table 17 shows the results of the load test on AWS IoT Core. Virtual gateways on an EC2 instance in the same region sent realistic zone telemetry, recorded from the simulator, every 10 seconds over MQTT with TLS, and each level was measured for 30 minutes after a three-minute warm-up. At 50, 500 and 2,000 gateways, which correspond to about 10, 100 and 400 data halls, the pipeline processed every message it received; the difference between messages sent and processed was within ±0.01 %, which is explained by messages in flight at the edges of the measuring window. The latency from a gateway publishing a message to the end of the detector run did not change with the load: the 50th and 95th percentiles were at most 100 milliseconds and the 99th percentile at most 150 milliseconds at every level. About 6 milliseconds of this was spent between the gateway and IoT Core, about 60 milliseconds between IoT Core and the start of the Lambda function, and about 12 milliseconds inside the detector. No Lambda or DynamoDB request was throttled and no IoT rule action failed. At 2,000 gateways, at most 43 detector instances ran at the same time, against an account limit of 400.
 
-**Cost model.** Table 17 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
+Table 17. Load test on AWS (eu-north-1): 30 minutes per level, one message per gateway every 10 seconds
 
-Table 17. Estimated monthly AWS cost (USD, list prices, default usage figures)
+| Gateways | Messages/s sent | Messages/s processed | p50 / p95 / p99 latency (ms) | Peak concurrent Lambdas | Throttles | Rule failures |
+| --- | --- | --- | --- | --- | --- | --- |
+| 50 | 5.0 | 5.0 | ≤ 100 / ≤ 100 / ≤ 150 | 1 | 0 | 0 |
+| 500 | 50.0 | 50.0 | ≤ 100 / ≤ 100 / ≤ 150 | 11 | 0 | 0 |
+| 2,000 | 200.0 | 200.0 | ≤ 100 / ≤ 100 / ≤ 150 | 43 | 0 | 0 |
+
+At the measured average detector duration of 29 milliseconds, 10,000 gateways (1,000 messages per second) would need about 29 concurrent executions. Scaling the measured peak linearly gives about 215, which is a conservative bound and still within the limit of 400. The full results are in experiments/results/e2_summary.md.
+
+**Measured cost.** [Step 8, to be completed: the cost model with the usage measured in the load test, and the measured AWS bill. Source files: experiments/results/e3_cost.md, e3_measured.md.]
+
+**Cost model.** Table 18 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
+
+Table 18. Estimated monthly AWS cost (USD, list prices, default usage figures)
 
 | Service | 1 hall | 10 halls | 100 halls |
 | --- | --- | --- | --- |
@@ -170,9 +182,9 @@ DynamoDB was the largest item. With provisioned capacity sized to the load inste
 
 ## Summary of the hypotheses
 
-Table 18 summarises the outcome of each hypothesis.
+Table 19 summarises the outcome of each hypothesis.
 
-Table 18. Outcome of the hypotheses
+Table 19. Outcome of the hypotheses
 
 | # | Hypothesis | Result | Outcome |
 | --- | --- | --- | --- |
@@ -181,6 +193,6 @@ Table 18. Outcome of the hypotheses
 | H3 | ML adds no false actions | 0 automated false actions; 1 notify-only alert per day | Pass (criterion post hoc) |
 | H4 | Detection generalises to real data | F1 0.77 against 0.76 for limits and 0.78 best published; higher false alarm rate | Pass on F1, with a limitation |
 | H5 | Guardrails keep automation safe | 0 wrong actions in all 2,120 runs; every guardrail tested; approval shown end to end on the local stack and on AWS | Pass (criterion post hoc) |
-| H6 | The cloud path adds only seconds | AWS live check: 2.4 s from sensor message to first command; 85 ms mean (p95 ≤ 150 ms) from gateway to detector | Pass in the live check; p95 under load open |
-| H7 | The design scales | – | Open (AWS load test) |
+| H6 | The cloud path adds only seconds | AWS live check: 2.4 s from sensor message to first command; load test: gateway to detector p95 ≤ 100 ms at up to 2,000 gateways | Pass |
+| H7 | The design scales | 50, 500, 2,000 gateways: p95 ≤ 100 ms, all messages processed, 0 throttles; peak 43 of 400 concurrent Lambdas | Pass |
 | H8 | Running cost is small | Model with default usage: $0.32 per rack per month | Open (measured bill) |

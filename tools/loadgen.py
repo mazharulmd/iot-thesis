@@ -262,6 +262,11 @@ def summary(rows: list[dict], limit: int | None) -> str:
                       f"{math.ceil(need)} concurrent executions at the measured average duration of "
                       f"{top['lambda_duration_avg_ms']:.0f} ms (concurrency = rate x duration)"
                       + (f"; this account allows {limit}." if limit else ".")]
+        if top["lambda_concurrency_max"]:
+            peak = top["lambda_concurrency_max"] * 10_000 / top["devices"]
+            lines += [f"Scaling the measured peak concurrency ({top['lambda_concurrency_max']:.0f} at "
+                      f"{top['devices']:,} gateways) linearly instead gives about {math.ceil(peak)}, a conservative "
+                      "bound because the peak includes bursts and container start-ups."]
     return "\n".join(lines)
 
 
