@@ -10,6 +10,12 @@ The power chain starts at the utility connection and on-site generators. An unin
 
 The cooling system typically has two stages. Computer room air handlers (CRAH) blow cool air through the IT equipment and return the heated air over cooling coils. The coils are fed with chilled water that pumps circulate from a chiller plant, where the heat is finally rejected to the outside. Fan speed, supply air temperature, chilled-water temperature and water flow therefore all determine how well a rack is cooled. Pumps and fans are rotating machines that wear gradually; rising vibration and motor current at a given flow are classic signs of mechanical degradation (ISO 10816-3 2009).
 
+Figure 1 shows the two chains as they are modelled in the simulated data hall of this thesis, together with the quantities that its gateways measure. Electricity flows from the utility through the UPS and the PDUs to the racks; heat flows back from the racks through the air to the CRAH units and through the chilled-water loop to the chiller.
+
+![Power and cooling chains of a data hall](figures/power-cooling-chain.png)
+
+Figure 1. Power and cooling chains of a data hall and the quantities measured in the simulated hall
+
 Critical equipment is normally installed with redundancy. N+1 redundancy means that one more unit than the load requires is available, so that a single failure can be absorbed by a standby unit. Redundancy does not remove the need to act, however: the standby unit must be started, or the remaining units must increase their output, and the failed unit must be repaired before a second failure occurs. Whether this happens in seconds or tens of minutes is a question of operations rather than design.
 
 ## Thermal limits and the growth of dense racks

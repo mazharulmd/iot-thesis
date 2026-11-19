@@ -14,7 +14,11 @@ AWS IoT Core is the managed MQTT broker and device platform of Amazon Web Servic
 
 Two features of IoT Core are central to this thesis. The first is the *rules engine*. A rule selects messages from topics with an SQL-like statement and forwards them to other AWS services, for example writing them into a DynamoDB table or invoking a Lambda function. Rules make it possible to process telemetry without running any server. (Amazon Web Services n.d.g.)
 
-The second feature is the *device shadow*. A shadow is a JSON document stored in the cloud for each thing, with a *desired* section written by applications and a *reported* section written by the device. When the two differ, IoT Core sends the difference, the *delta*, to the device, which applies it and reports its new state. Because the shadow is stored, a command written while a device is offline is delivered when the device reconnects. (Amazon Web Services n.d.d.) Shadows therefore suit remediation commands well: they are durable, auditable and idempotent, since writing the same desired state twice produces no new delta.
+The second feature is the *device shadow*. A shadow is a JSON document stored in the cloud for each thing, with a *desired* section written by applications and a *reported* section written by the device. When the two differ, IoT Core sends the difference, the *delta*, to the device, which applies it and reports its new state. Because the shadow is stored, a command written while a device is offline is delivered when the device reconnects. (Amazon Web Services n.d.d.) Shadows therefore suit remediation commands well: they are durable, auditable and idempotent, since writing the same desired state twice produces no new delta. Figure 2 shows how the broker, the rules engine and the device shadow work together for one gateway.
+
+![MQTT, rules engine and device shadow in AWS IoT Core](figures/iot-core-mqtt-shadow.png)
+
+Figure 2. Telemetry and commands of one gateway in AWS IoT Core: the broker receives the telemetry, a rule forwards it to other services, and the device shadow delivers commands as a delta
 
 ## Serverless and event-driven computing
 

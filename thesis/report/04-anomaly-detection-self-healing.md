@@ -34,7 +34,11 @@ Benchmark results must be interpreted with care. A large comparative study of 71
 
 ## Self-healing and autonomic computing
 
-The vision of autonomic computing describes systems that manage themselves according to high-level goals. Their self-management covers self-configuration, self-optimisation, self-protection and self-healing, and it is organised as a control loop that *monitors* the system, *analyses* the data, *plans* a response and *executes* it, based on shared *knowledge*. This MAPE-K loop has become the reference model for self-adaptive systems. (Kephart & Chess 2003.)
+The vision of autonomic computing describes systems that manage themselves according to high-level goals. Their self-management covers self-configuration, self-optimisation, self-protection and self-healing, and it is organised as a control loop that *monitors* the system, *analyses* the data, *plans* a response and *executes* it, based on shared *knowledge*. This MAPE-K loop has become the reference model for self-adaptive systems. (Kephart & Chess 2003.) Figure 3 shows how the loop maps to the framework developed in this thesis, which is described in Chapter 6.
+
+![MAPE-K loop mapped to the framework](figures/mape-k-mapping.png)
+
+Figure 3. The MAPE-K loop of autonomic computing mapped to the components of the framework (adapted from Kephart & Chess 2003)
 
 Self-healing systems detect that they are in a faulty state and return to normal operation without human intervention (Ghosh, Sharman, Rao & Upadhyaya 2007; Psaier & Dustdar 2011). Surveys of self-healing frameworks show that most work targets software: web services, distributed applications, cloud platforms and, more recently, containers and microservices (Schneider, Barker & Dobson 2015; Rouholamini et al. 2024). A recent systematic review of 99 studies on AI-driven self-healing across the edge–cloud continuum reports a shift from observational monitoring towards autonomous repair, but also a validation gap for real deployments (AI-driven self-healing across the edge–cloud continuum 2026). Self-healing has also been studied in smart manufacturing, where fault diagnosis is combined with fault-tolerant control of physical processes (Aldrini, Chihi & Sidhom 2023).
 

@@ -4,9 +4,9 @@ This chapter presents the results of the evaluations in the order of Table 4: th
 
 ## Detector evaluation
 
-Each detector was evaluated on the eight fault types with five seeds each, without remediation, and on 24 hours of separate normal operation to count false alarms. Table 11 shows how many of the 40 faults each detector diagnosed correctly, the median time to detect, and the false alarms. Automated false alarms are false diagnoses that would have started a playbook; notify-only false alarms are *unexplained* anomalies that would only have alerted a person.
+Each detector was evaluated on the eight fault types with five seeds each, without remediation, and on 24 hours of separate normal operation to count false alarms. Table 12 shows how many of the 40 faults each detector diagnosed correctly, the median time to detect, and the false alarms. Automated false alarms are false diagnoses that would have started a playbook; notify-only false alarms are *unexplained* anomalies that would only have alerted a person.
 
-Table 11. Detector evaluation on simulated faults (8 fault types × 5 seeds)
+Table 12. Detector evaluation on simulated faults (8 fault types × 5 seeds)
 
 | Detector | Faults detected | Median time to detect | Wrong automated events | Automated false alarms per day | Notify-only false alarms per day |
 | --- | --- | --- | --- | --- | --- |
@@ -22,9 +22,9 @@ The pure machine-learning detectors had blind spots of their own. Neither detect
 
 ## Validation on real pump data
 
-The detectors were applied to the SKAB test set, 34 labelled experiments from a real water-pump testbed, using the benchmark's protocol. Table 12 shows the results together with two published leaderboard entries for comparison.
+The detectors were applied to the SKAB test set, 34 labelled experiments from a real water-pump testbed, using the benchmark's protocol. Table 13 shows the results together with two published leaderboard entries for comparison.
 
-Table 12. Results on the SKAB test set (k = 1, pointwise scoring)
+Table 13. Results on the SKAB test set (k = 1, pointwise scoring)
 
 | Detector | F1 | False alarm rate | Missed alarm rate |
 | --- | --- | --- | --- |
@@ -45,9 +45,9 @@ Before the main experiments, every playbook was tested in the offline closed loo
 
 ## E1: fault response
 
-Experiment E1 compared the three operating modes on the eight fault types with 20 paired seeds each, 480 runs in total. Table 13 shows the detection rate and the median time to recover, and Figure 11 shows the median time to recover with its confidence interval.
+Experiment E1 compared the three operating modes on the eight fault types with 20 paired seeds each, 480 runs in total. Table 14 shows the detection rate and the median time to recover, and Figure 14 shows the median time to recover with its confidence interval.
 
-Table 13. E1 detection rate and median time to recover (20 runs per cell)
+Table 14. E1 detection rate and median time to recover (20 runs per cell)
 
 | Fault | Detected M1 / M2 / M3 | Median MTTR M1 (min) | Median MTTR M2 (min) | Median MTTR M3 (min) |
 | --- | --- | --- | --- | --- |
@@ -62,7 +62,7 @@ Table 13. E1 detection rate and median time to recover (20 runs per cell)
 
 ![Time to recover in E1](figures/fig_e1_mttr.png)
 
-Figure 11. Median time to recover after a fault in E1, with 95 % confidence intervals
+Figure 14. Median time to recover after a fault in E1, with 95 % confidence intervals
 
 **Effect of automation (M1 against M2).** For the four fault types that harm the hall and that the limits detect without needing approval, automation reduced the median time to recover from 11.5–23.2 minutes to 0.8–13.3 minutes. All four differences were significant after Holm correction (p < 10⁻⁶), with rank-biserial correlations of 0.97–1.00, which means that practically every automated run recovered faster than every manual run. The thermal exposure after a CRAH failure fell from a median of 641 to 17 kelvin-minutes above 27 °C, a reduction of 97 %. For the two high-risk faults, M1 and M2 did not differ, because both waited for the same simulated person.
 
@@ -74,9 +74,9 @@ Figure 11. Median time to recover after a fault in E1, with 95 % confidence inte
 
 ## Sensitivity to the human response time
 
-Because the simulated operator's response time was an assumption, the alert-only mode M1 was repeated with median response times of 5, 10, 20 and 30 minutes on all eight fault types (320 runs). Table 14 and Figure 12 show the results.
+Because the simulated operator's response time was an assumption, the alert-only mode M1 was repeated with median response times of 5, 10, 20 and 30 minutes on all eight fault types (320 runs). Table 15 and Figure 15 show the results.
 
-Table 14. Alert-only response with different median human response times
+Table 15. Alert-only response with different median human response times
 
 | Median human response | Recovered within 45 min | Median time to recover [95 % CI] |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ Table 14. Alert-only response with different median human response times
 
 ![Sensitivity of M1 to the human response time](figures/fig_m1_sensitivity.png)
 
-Figure 12. Time to recover in alert-only mode as a function of the human response time
+Figure 15. Time to recover in alert-only mode as a function of the human response time
 
 Even with a fast median response of five minutes, alert-only operation took ten times longer to recover than M3. The conclusion that automation shortens recovery therefore did not depend on the assumed response time.
 
@@ -99,9 +99,9 @@ Even with a fast median response of five minutes, alert-only operation took ten 
 
 **A sensor already faulty.** In two scenarios a rack sensor had failed five minutes before a physical fault in the same zone. With a stuck sensor followed by a CRAH failure, the median time to recover was 12.7 minutes in M1 and 1.0 minute in M2 and M3. With a drifting sensor followed by chilled-water drift, it was 16.7, 4.9 and 1.7 minutes. All runs were detected and recovered, and no wrong action occurred.
 
-**Message loss.** Table 15 shows the results when 5, 10 or 20 % of gateway messages were lost, for all eight fault types (80 runs per cell), and Figure 13 shows the time to detect.
+**Message loss.** Table 16 shows the results when 5, 10 or 20 % of gateway messages were lost, for all eight fault types (80 runs per cell), and Figure 16 shows the time to detect.
 
-Table 15. Detection and recovery with lost messages
+Table 16. Detection and recovery with lost messages
 
 | Messages lost | M2 detected / recovered | M2 median MTTD, MTTR | M3 detected / recovered | M3 median MTTD, MTTR |
 | --- | --- | --- | --- | --- |
@@ -111,15 +111,15 @@ Table 15. Detection and recovery with lost messages
 
 ![Time to detect with lost messages](figures/fig_e4_drop.png)
 
-Figure 13. Time to detect with 5–20 % of messages lost
+Figure 16. Time to detect with 5–20 % of messages lost
 
 With 20 % of messages lost, the ML hybrid still detected every fault. Detection became slower because a gap in a gateway's sequence restarts its 90-second history window. The share of M2 detections stayed at 75 % because the limits never detect two of the eight fault types. No wrong action occurred in any of the 600 robustness runs.
 
 ## E5: severity
 
-Experiment E5 repeated every fault type at three severity levels, from milder to harsher than in E1, with 10 seeds per mode (720 runs). Table 16 shows the median time to recover per level and mode, and Figure 14 shows the same results with their confidence intervals.
+Experiment E5 repeated every fault type at three severity levels, from milder to harsher than in E1, with 10 seeds per mode (720 runs). Table 17 shows the median time to recover per level and mode, and Figure 17 shows the same results with their confidence intervals.
 
-Table 16. E5 median time to recover in minutes (M1 / M2 / M3, 10 runs per cell)
+Table 17. E5 median time to recover in minutes (M1 / M2 / M3, 10 runs per cell)
 
 | Fault | Level 1 (mildest) | Level 2 (E1 level) | Level 3 (harshest) |
 | --- | --- | --- | --- |
@@ -136,7 +136,7 @@ The stuck-sensor levels are defined differently from the other faults: level 1 f
 
 ![Recovery across fault severity](figures/fig_e5_severity.png)
 
-Figure 14. Median time to recover across three severity levels per fault type
+Figure 17. Median time to recover across three severity levels per fault type
 
 The ranking of the modes held at every severity level. In none of the 48 comparisons (24 fault and level cells, each comparing M1 with M2 and M2 with M3) was the later mode significantly slower than the earlier one. Automation was significantly faster than alert-only response in 10 cells and ML detection was significantly faster than static limits in 13 cells (Holm-adjusted p < 0.05); in the remaining cells the modes did not differ. The limits detected 70 % of the faults in E5 and the ML hybrid 100 %. When a stuck sensor hid a warming rack, only the ML hybrid noticed it and quarantined the sensor within about one minute, while the other modes never recovered within the observation window. No wrong action occurred in any of the 720 runs.
 
@@ -150,9 +150,9 @@ The latency from a fault to the first corrective command was dominated by detect
 
 **Live check on AWS.** The stack was deployed to AWS in the Stockholm region, and the end-to-end check was run with the simulated gateways connected to IoT Core over MQTT from an EC2 instance in the same region, at ten times the real message rate. Both scenarios passed every check. When CRAH 2 failed, the detector published the anomaly 30 simulated seconds after the fault, the cooling failover playbook started the standby unit and handed the zone back to automatic control without human input, and all rack inlets in the zone stayed below 27 °C (at most 20.8 °C). The time from the sensor message that confirmed the fault to the first command arriving at the gateway was 2.4 seconds, which covers detection, the decision in the state machine and the command through the device shadow. From a gateway publishing a message to the end of the detector run, the mean latency was 85 milliseconds and the 95th percentile at most 150 milliseconds; most of it was queueing, and detection itself took about 6 milliseconds. A shadow command made the round trip to the gateway in 254 milliseconds. In the second scenario, the UPS overheating plan waited for approval without sending any command, the email link opened the plan without deciding anything, the approval was accepted once and refused the second time, and the load was transferred to the second UPS only after the plan had been rechecked on fresh telemetry. The full output is in experiments/results/aws_e2e_check.md.
 
-**Load test.** Table 17 shows the results of the load test on AWS IoT Core. Virtual gateways on an EC2 instance in the same region sent realistic zone telemetry, recorded from the simulator, every 10 seconds over MQTT with TLS, and each level was measured for 30 minutes after a three-minute warm-up. At 50, 500 and 2,000 gateways, which correspond to about 10, 100 and 400 data halls, the pipeline processed every message it received; the difference between messages sent and processed was within ±0.01 %, which is explained by messages in flight at the edges of the measuring window. The latency from a gateway publishing a message to the end of the detector run did not change with the load: the 50th and 95th percentiles were at most 100 milliseconds and the 99th percentile at most 150 milliseconds at every level. About 6 milliseconds of this was spent between the gateway and IoT Core, about 60 milliseconds between IoT Core and the start of the Lambda function, and about 12 milliseconds inside the detector. No Lambda or DynamoDB request was throttled and no IoT rule action failed. During the measuring window at 2,000 gateways, at most 43 detector instances ran at the same time, against an account limit of 400.
+**Load test.** Table 18 shows the results of the load test on AWS IoT Core. Virtual gateways on an EC2 instance in the same region sent realistic zone telemetry, recorded from the simulator, every 10 seconds over MQTT with TLS, and each level was measured for 30 minutes after a three-minute warm-up. At 50, 500 and 2,000 gateways, which correspond to about 10, 100 and 400 data halls, the pipeline processed every message it received; the difference between messages sent and processed was within ±0.01 %, which is explained by messages in flight at the edges of the measuring window. The latency from a gateway publishing a message to the end of the detector run did not change with the load: the 50th and 95th percentiles were at most 100 milliseconds and the 99th percentile at most 150 milliseconds at every level. About 6 milliseconds of this was spent between the gateway and IoT Core, about 60 milliseconds between IoT Core and the start of the Lambda function, and about 12 milliseconds inside the detector. No Lambda or DynamoDB request was throttled and no IoT rule action failed. During the measuring window at 2,000 gateways, at most 43 detector instances ran at the same time, against an account limit of 400.
 
-Table 17. Load test on AWS (eu-north-1): 30 minutes per level, one message per gateway every 10 seconds
+Table 18. Load test on AWS (eu-north-1): 30 minutes per level, one message per gateway every 10 seconds
 
 | Gateways | Messages/s sent | Messages/s processed | p50 / p95 / p99 latency (ms) | Peak concurrent Lambdas | Throttles | Rule failures |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -160,17 +160,17 @@ Table 17. Load test on AWS (eu-north-1): 30 minutes per level, one message per g
 | 500 | 50.0 | 50.0 | ≤ 100 / ≤ 100 / ≤ 150 | 11 | 0 | 0 |
 | 2,000 | 200.0 | 200.0 | ≤ 100 / ≤ 100 / ≤ 150 | 43 | 0 | 0 |
 
-The CloudWatch dashboard of the deployment confirms these figures (Figure 15). IoT Core received and matched about 3,000 messages a minute at 500 gateways and 12,000 at 2,000, no rule action failed, and the detector reported no errors or throttles. It also shows what the measuring window excluded: at the start of the 2,000-gateway level, while new function instances were being started, up to 94 detector instances ran at the same time before the number settled at about 43.
+The CloudWatch dashboard of the deployment confirms these figures (Figure 18). IoT Core received and matched about 3,000 messages a minute at 500 gateways and 12,000 at 2,000, no rule action failed, and the detector reported no errors or throttles. It also shows what the measuring window excluded: at the start of the 2,000-gateway level, while new function instances were being started, up to 94 detector instances ran at the same time before the number settled at about 43.
 
 ![CloudWatch dashboard during the load test](figures/aws-cloudwatch-loadtest.png)
 
-Figure 15. CloudWatch dashboard of the deployment: the load test at 500 and 2,000 gateways (until about 12:45 UTC) and the live demonstrations (after 13:40 UTC)
+Figure 18. CloudWatch dashboard of the deployment: the load test at 500 and 2,000 gateways (until about 12:45 UTC) and the live demonstrations (after 13:40 UTC)
 
 At the measured average detector duration of 29 milliseconds, 10,000 gateways (1,000 messages per second) would need about 29 concurrent executions in a steady state, and scaling the measured steady-state peak linearly gives about 215, both within the limit of 400. A start-up burst scaled in the same way, however, would exceed the limit, so at that scale the detector would need reserved concurrency or a higher quota, or the gateways would have to reconnect gradually. The full results are in experiments/results/e2_summary.md.
 
-**Cost.** Table 18 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and the usage per message measured in the load test at 2,000 gateways: an average detector run of 29 milliseconds with 512 MB of memory, one write unit per message in each of the two tables written and about one read unit per history query. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
+**Cost.** Table 19 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and the usage per message measured in the load test at 2,000 gateways: an average detector run of 29 milliseconds with 512 MB of memory, one write unit per message in each of the two tables written and about one read unit per history query. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
 
-Table 18. Estimated monthly AWS cost (USD, list prices, usage measured in the load test)
+Table 19. Estimated monthly AWS cost (USD, list prices, usage measured in the load test)
 
 | Service | 1 hall | 10 halls | 100 halls |
 | --- | --- | --- | --- |
@@ -189,9 +189,9 @@ One hall with 20 racks would cost about $5 a month at list price, or $0.25 per r
 
 ## Summary of the hypotheses
 
-Table 19 summarises the outcome of each hypothesis.
+Table 20 summarises the outcome of each hypothesis.
 
-Table 19. Outcome of the hypotheses
+Table 20. Outcome of the hypotheses
 
 | # | Hypothesis | Result | Outcome |
 | --- | --- | --- | --- |
