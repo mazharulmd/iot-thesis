@@ -6,7 +6,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 set -a; [[ -f .env ]] && . ./.env; set +a
 export AWS_ENDPOINT_URL="http://localhost:4566"
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-ap-south-1}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-north-1}"
 export AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION}}"
 export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}" AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}"
 echo "Region: ${AWS_REGION}"
