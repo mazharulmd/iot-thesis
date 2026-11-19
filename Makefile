@@ -202,7 +202,7 @@ aws-login:     ## Sign in with IAM Identity Center (profile AWS_THESIS_PROFILE)
 aws-whoami:    ## Show which AWS account and identity the aws-* targets use
 	$(AWSENV) aws sts get-caller-identity
 
-aws-bootstrap: ## One-time CDK bootstrap of the AWS account/region
+aws-bootstrap: build-lambdas ## One-time CDK bootstrap of the AWS account/region (the app needs the Lambda packages to synthesise)
 	source $(VENV)/bin/activate && $(AWSENV) cdk bootstrap -c stage=$(AWS_STAGE)
 
 aws-deploy: build-lambdas ## Deploy all stacks to real AWS (on-demand tables, IoT Core)

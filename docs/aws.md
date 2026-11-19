@@ -26,6 +26,32 @@ Plan the AWS work for **one day** and destroy everything at the end of it (`make
    [AWS Pricing Calculator](https://calculator.aws/). The load test prints its estimate and asks
    before it starts.
 
+## Running from an EC2 instance (no access keys)
+
+Instead of a server with an access key, an EC2 instance with an IAM role works (tested on Ubuntu
+24.04, m7i-flex.large, 8 GiB, opened in the browser with Session Manager):
+
+1. IAM → Roles → Create role for **EC2** with `AdministratorAccess` and `AmazonSSMManagedInstanceCore`.
+2. Launch the instance. If the console sets the default service-access instance profile and the IAM
+   profile cannot be chosen, launch anyway and then use **Actions → Security → Modify IAM role**.
+3. Connect → Session Manager, then:
+
+```bash
+sudo -iu ubuntu
+umask 022 && echo 'umask 022' >> ~/.bashrc     # Session Manager shells use 002; CDK's jsii cache refuses group-writable dirs
+git clone https://github.com/mazharulmd/iot-thesis.git && cd iot-thesis
+bash scripts/setup-server.sh                   # the Docker/LocalStack parts are not needed for AWS
+chmod -R go-w ~/.cache
+aws configure set region ap-south-1
+make venv
+printf 'AWS_THESIS_PROFILE=default\nALERT_EMAIL=you@example.com\n' > .env   # "default" falls back to the instance role
+make aws-whoami                                # shows assumed-role/<your role>
+```
+
+Then continue with `make aws-bootstrap` below. The instance's region does not matter: the stack
+goes to the region set above. If the instance runs in another region than the stack, the measured
+gateway → IoT Core latency includes that long-haul path; state it with the results.
+
 ## One-time setup on the server
 
 **Credentials.** The `aws-*` targets use the named profile in `AWS_THESIS_PROFILE` (default
