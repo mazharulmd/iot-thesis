@@ -150,7 +150,7 @@ The latency from a fault to the first corrective command was dominated by detect
 
 **Measurements on AWS.** [Step 8, to be completed after the measurements on AWS: end-to-end latency from sensor message to first command at the gateway (p50, p95, p99) through IoT Core; the results of the load test at 50, 500 and 2,000 gateways, including messages processed and Lambda throttles; and the measured AWS bill. Source files: experiments/results/e2_summary.md, e3_measured.md.]
 
-**Cost model.** Table 17 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Mumbai region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
+**Cost model.** Table 17 shows the monthly cost estimated by the cost model for one, ten and one hundred data halls, using list prices for the Stockholm region and default usage figures per message that will be replaced by the values measured in the load test. Every gateway sends one message every 10 seconds, and five automated and 30 notify-only incidents per hall and month were assumed.
 
 Table 17. Estimated monthly AWS cost (USD, list prices, default usage figures)
 

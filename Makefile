@@ -9,7 +9,7 @@ export
 endif
 # One region everywhere.  cdklocal drops AWS_* variables unless allow-listed,
 # which would otherwise make it deploy to us-east-1.
-AWS_DEFAULT_REGION ?= ap-south-1
+AWS_DEFAULT_REGION ?= eu-north-1
 AWS_REGION ?= $(AWS_DEFAULT_REGION)
 export AWS_DEFAULT_REGION AWS_REGION
 export AWS_ENVAR_ALLOWLIST := AWS_REGION,AWS_DEFAULT_REGION

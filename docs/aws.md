@@ -1,6 +1,6 @@
 # Real AWS (Step 8): validation, load test (E2) and cost (E3)
 
-The same code that ran on LocalStack is deployed to your AWS account in **ap-south-1 (Mumbai)**.
+The same code that ran on LocalStack is deployed to your AWS account in **eu-north-1 (Stockholm)**.
 There is no bridge on AWS: the gateways connect to **IoT Core** with an X.509 certificate, a topic
 rule stores telemetry and invokes the detector, and playbooks command the equipment through IoT
 Core device shadows.
@@ -22,7 +22,7 @@ Plan the AWS work for **one day** and destroy everything at the end of it (`make
 | Everything left running for a month by mistake | a few dollars (on-demand tables, idle), so still destroy it |
 
 1. In the Billing console, create a **budget** (e.g. $10 per month) with an email alert.
-2. Estimates use list prices in `experiments/prices.yaml`; check them for ap-south-1 in the
+2. Estimates use list prices in `experiments/prices.yaml`; check them for eu-north-1 in the
    [AWS Pricing Calculator](https://calculator.aws/). The load test prints its estimate and asks
    before it starts.
 
@@ -42,7 +42,7 @@ umask 022 && echo 'umask 022' >> ~/.bashrc     # Session Manager shells use 002;
 git clone https://github.com/mazharulmd/iot-thesis.git && cd iot-thesis
 bash scripts/setup-server.sh                   # the Docker/LocalStack parts are not needed for AWS
 chmod -R go-w ~/.cache
-aws configure set region ap-south-1
+aws configure set region eu-north-1
 make venv
 printf 'AWS_THESIS_PROFILE=default\nALERT_EMAIL=you@example.com\n' > .env   # "default" falls back to the instance role
 make aws-whoami                                # shows assumed-role/<your role>
@@ -59,7 +59,7 @@ gateway → IoT Core latency includes that long-haul path; state it with the res
 
 - *IAM user (simplest):* in the IAM console create a user `thesis-cli` with the
   `AdministratorAccess` policy and an access key for the CLI, then on the server
-  `aws configure --profile thesis` (region `ap-south-1`, output `json`). Delete the access key when
+  `aws configure --profile thesis` (region `eu-north-1`, output `json`). Delete the access key when
   Step 8 is finished.
 - *IAM Identity Center:* `aws configure sso --profile thesis`, then `make aws-login` when the
   session expires.

@@ -14,7 +14,7 @@ def session(stage: str) -> boto3.Session:
         os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
         os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
         os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
-    os.environ.setdefault("AWS_DEFAULT_REGION", os.environ.get("AWS_REGION", "ap-south-1"))
+    os.environ.setdefault("AWS_DEFAULT_REGION", os.environ.get("AWS_REGION", "eu-north-1"))
     return boto3.Session()
 
 

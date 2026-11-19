@@ -1,4 +1,4 @@
-Monthly cost in USD (2026-09 (list prices; verify for ap-south-1); usage: defaults (not yet measured on AWS)).
+Monthly cost in USD (2026-09 (list prices; verify for eu-north-1); usage: defaults (not yet measured on AWS)).
 
 | Service | small (1 hall) | medium (10 halls) | large (100 halls) |
 | --- | --- | --- | --- |

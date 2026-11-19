@@ -25,7 +25,7 @@ Table 5. Infrastructure stacks
 
 Security followed the principle of least privilege. Each gateway authenticates to IoT Core with its own X.509 certificate, and the device policy allows it to publish only to its own telemetry topic and to use only its own shadow. Each Lambda function and the state machine have their own IAM role with only the permissions they need. Data is encrypted in transit with TLS and at rest with keys managed by AWS. Reliability was addressed with an error action on the topic rule, which saves failed messages to S3, retries with back-off in the state machine, a heartbeat record per gateway that shows when telemetry last arrived, and an escalation path to a person whenever a playbook step fails.
 
-The same infrastructure code was deployed to two environments. For development and the main experiments, it ran on LocalStack, with the Mosquitto broker and a small bridge process standing in for the IoT Core broker, rules and shadows. For the final validation, load test and cost measurement, it was deployed to AWS in the Mumbai region (ap-south-1), where IoT Core replaces the bridge.
+The same infrastructure code was deployed to two environments. For development and the main experiments, it ran on LocalStack, with the Mosquitto broker and a small bridge process standing in for the IoT Core broker, rules and shadows. For the final validation, load test and cost measurement, it was deployed to AWS in the Stockholm region (eu-north-1), where IoT Core replaces the bridge.
 
 ## Simulated data hall
 

@@ -10,7 +10,7 @@ from bridge.core import BridgeCore
 from bridge.shadow import ShadowStore, compute_delta, merge
 from common.topology import gateway_from_topic, gateway_of, shadow_topic, telemetry_topic
 
-REGION = "ap-south-1"
+REGION = "eu-north-1"
 
 
 # ---------------------------------------------------------------- topology

@@ -66,7 +66,7 @@ Seven evaluations cover the hypotheses: four are done, E5 is built and runs offl
 | E1 fault response | H1, H2, H5 | Offline closed loop (real Lambda code, mocked AWS) | 8 faults × 3 modes × 20 seeds, paired by seed | 480 | Done |
 | M1 sensitivity and E4 robustness | H1, H3, H5 | Offline closed loop | Human median 5–30 min; load surges; faulty sensors; 5–20 % message loss | 920 | Done |
 | E5 severity sweep | H1, H2, H5 | Offline closed loop | 8 faults × 3 severity levels × 3 modes × 10 seeds; one level per fault repeats E1 | 720 | Built; runs on the server |
-| Live check and E2 load test | H5, H6, H7 | Real AWS, ap-south-1 | End-to-end fault and approval check; 50, 500, 2,000 gateways × 30 min | 1 + 3 | Step 8 |
+| Live check and E2 load test | H5, H6, H7 | Real AWS, eu-north-1 | End-to-end fault and approval check; 50, 500, 2,000 gateways × 30 min | 1 + 3 | Step 8 |
 | E3 cost | H8 | Real AWS bill + cost model | Measured usage per message → 1, 10, 100 halls | – | Step 8 |
 
 **Data separation.** Detectors are trained on normal operation only (seeds 101–108); thresholds are calibrated on seeds 201–208; the detector evaluation uses seeds 11–15 and the experiments seeds 1001–1020. No fault data is used for training, and ground-truth labels never enter the cloud path.
@@ -83,7 +83,7 @@ Results are reported as medians with 95 % bootstrap confidence intervals (2,000 
 - **Censoring:** a run not recovered within 45 min counts as 45 min, which ranks it below every recovered run; such medians are shown as "> 45".
 - **Physical truth:** recovery and exposure use the simulator's true state, never the sensors, so no mode is credited for what its own detectors believe.
 - **Latency (E2):** p50, p95 and p99 from per-message timestamps, per load level; the 10,000-gateway figure is an extrapolation and is labelled as one.
-- **Cost (E3):** list prices for ap-south-1, with and without the always-free allowances; the measured bill checks the model at test scale.
+- **Cost (E3):** list prices for eu-north-1, with and without the always-free allowances; the measured bill checks the model at test scale.
 
 ## Threats to validity
 

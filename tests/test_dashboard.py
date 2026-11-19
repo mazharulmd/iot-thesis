@@ -129,7 +129,7 @@ def test_server_without_token_on_localhost():
 @mock_aws
 def test_aws_source_reads_the_deployed_tables(monkeypatch):
     import dashboard.aws as aws
-    ddb = boto3.resource("dynamodb", region_name="ap-south-1")
+    ddb = boto3.resource("dynamodb", region_name="eu-north-1")
 
     def table(name, hk, rk=None):
         ks = [{"AttributeName": hk, "KeyType": "HASH"}] + ([{"AttributeName": rk, "KeyType": "RANGE"}] if rk else [])
@@ -148,7 +148,7 @@ def test_aws_source_reads_the_deployed_tables(monkeypatch):
     inc.put_item(Item={"id": "i1", "sk": "L#" + now + "#00001", "step": "opened", "at": now})
     stats.put_item(Item={"gw": "zone1", "last_latency_ms": 120})
 
-    monkeypatch.setattr(aws, "session", lambda stage: boto3.Session(region_name="ap-south-1"))
+    monkeypatch.setattr(aws, "session", lambda stage: boto3.Session(region_name="eu-north-1"))
     monkeypatch.setattr(aws, "stack_outputs", lambda sess, stage: {
         "TelemetryTableName": "T", "IncidentsTableName": "I", "DetectionsTableName": "D", "IngestStatsTableName": "S"})
     st = LiveState("aws")

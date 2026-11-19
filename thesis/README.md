@@ -36,7 +36,7 @@ re-exported into this folder, so this repository is the single source for the wh
 | 6 | Guardrails: risk tiers, approval with one-time links, recheck, circuit breaker, rate limit | Done |
 | 7 | Experiments E1, M1 sensitivity, E4 (1,400 runs on the OCI server) | Done |
 | 7.1 | E5 severity sweep (720 runs) and CloudWatch dashboard | Built; E5 to run (`make e5`) |
-| 8 | Real AWS in ap-south-1: end-to-end check, E2 load test, E3 cost, dashboard | Built; to run ([docs/aws.md](../docs/aws.md)) |
+| 8 | Real AWS in eu-north-1: end-to-end check, E2 load test, E3 cost, dashboard | Built; to run ([docs/aws.md](../docs/aws.md)) |
 | 9 | Thesis writing, figures, supervisor review | Full draft in `report/`; Step 8 results and front-page fields to fill in |
 
 ## Research questions → evidence
@@ -70,7 +70,7 @@ re-exported into this folder, so this repository is the single source for the wh
 | One state machine per playbook | One generic state machine; playbooks are data (`playbooks/catalog.py`) | One definition to test and deploy; new playbooks need no infrastructure change |
 | AWS IoT Device SDK for gateways | paho-mqtt (MQTT 3.1.1 over TLS with X.509 on AWS) | Same code path against Mosquitto locally and IoT Core on AWS |
 | Main experiments on AWS | Main experiments offline/LocalStack; real AWS for final validation, E2 and E3 | Cost control and repeatability; AWS confirms that results carry over |
-| Region `eu-north-1` or `us-east-1` | `ap-south-1` (Mumbai) | Chosen for the author's location; every service used is available there |
+| Region `eu-north-1` or `us-east-1` | `eu-north-1` (Stockholm) | As proposed; the AWS account's organisation policy allows only this region, and every service used is available there |
 | E2 at 50/500/2,000/10,000 devices | 50/500/2,000 measured, 10,000 extrapolated | Budget; the extrapolation states the Lambda concurrency required |
 | Grafana dashboards | CloudWatch metrics and logs plus the command-line status tools in `tools/` | Fewer moving parts; figures come from `experiments/analysis.py` |
 

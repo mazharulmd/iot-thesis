@@ -15,7 +15,7 @@ from moto import mock_aws
 from experiments.closed_loop import fault_scenario, run_closed_loop
 
 ROOT = Path(__file__).resolve().parents[1]
-REGION = "ap-south-1"
+REGION = "eu-north-1"
 
 
 @lru_cache(maxsize=None)

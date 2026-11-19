@@ -18,7 +18,7 @@ from stacks.foundation_stack import FoundationStack  # noqa: E402
 from stacks.iot_stack import TELEMETRY_SQL, IotStack  # noqa: E402
 from tools.status import histogram, percentile  # noqa: E402
 
-REGION = "ap-south-1"
+REGION = "eu-north-1"
 
 
 @pytest.fixture(scope="module")

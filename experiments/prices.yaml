@@ -2,11 +2,11 @@
 #
 # These are AWS on-demand list prices as published for us-east-1 (N. Virginia), because the
 # region-specific tables are not machine-readable from the development environment. Prices in
-# ap-south-1 (Mumbai) are the same for Lambda and similar (within about 15 %) for the others.
+# eu-north-1 (Stockholm) are the same for Lambda and similar (within about 15 %) for the others.
 # Before quoting numbers in the thesis, check each line in the AWS Pricing Calculator
-# (https://calculator.aws/) for ap-south-1 and edit this file; the measured bill from
+# (https://calculator.aws/) for eu-north-1 and edit this file; the measured bill from
 # `make aws-bill` (Cost Explorer) is the ground truth for the test-scale cost.
-as_of: "2026-09 (list prices; verify for ap-south-1)"
+as_of: "2026-09 (list prices; verify for eu-north-1)"
 region_note: "us-east-1 list prices unless stated"
 
 lambda:

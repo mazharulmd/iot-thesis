@@ -68,7 +68,7 @@ class LiveBridge:
 
 
 def make_table():
-    ddb = boto3.resource("dynamodb", region_name="ap-south-1")
+    ddb = boto3.resource("dynamodb", region_name="eu-north-1")
     ddb.create_table(TableName="Telemetry",
                      KeySchema=[{"AttributeName": "gw", "KeyType": "HASH"},
                                 {"AttributeName": "ts", "KeyType": "RANGE"}],

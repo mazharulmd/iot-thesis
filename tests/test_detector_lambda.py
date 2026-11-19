@@ -14,7 +14,7 @@ from moto import mock_aws
 from simulator.runner import load_scenario, run_scenario
 
 ROOT = Path(__file__).resolve().parents[1]
-REGION = "ap-south-1"
+REGION = "eu-north-1"
 
 
 @pytest.fixture

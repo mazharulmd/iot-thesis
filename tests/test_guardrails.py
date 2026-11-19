@@ -16,7 +16,7 @@ from playbooks.asl import execute
 from playbooks.state_machine import definition
 
 ROOT = Path(__file__).resolve().parents[1]
-REGION = "ap-south-1"
+REGION = "eu-north-1"
 
 
 def steps(incident):

@@ -49,8 +49,8 @@ from simulator.model import DataHall
 from simulator.runner import load_scenario
 
 ROOT = Path(__file__).resolve().parents[1]
-REGION = "ap-south-1"
-FN = "arn:aws:lambda:ap-south-1:000000000000:function:remediation"
+REGION = "eu-north-1"
+FN = "arn:aws:lambda:eu-north-1:000000000000:function:remediation"
 META_KEYS = {"cmd_id", "issued_at", "applied_at", "errors"}
 
 
