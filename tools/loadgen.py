@@ -256,7 +256,8 @@ def main() -> None:
     sess = session(args.stage)
     out = stack_outputs(sess, args.stage)
     events = sess.client("events")
-    rule_args = {"Name": out["PlaybookRuleName"], "EventBusName": out["EventBusName"]}
+    # Ref of a rule on a custom bus is "bus|rule"; the API wants the rule name alone.
+    rule_args = {"Name": out["PlaybookRuleName"].split("|")[-1], "EventBusName": out["EventBusName"]}
     limit = sess.client("lambda").get_account_settings()["AccountLimit"].get("ConcurrentExecutions")
     print(f"Account Lambda concurrency limit: {limit}. Pausing the playbook rule for the test.", flush=True)
     tmpl = templates()
