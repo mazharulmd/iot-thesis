@@ -15,17 +15,18 @@ const APPLY_THEME = process.env.APPLY_THEME;   // path to the pptx skill's scrip
 
 const THEME = {
   name: "dc-selfheal",
-  headFontFace: "Calibri",
+  headFontFace: "Cambria",
   bodyFontFace: "Calibri",
   colors: {
-    dk1: "0B1220", lt1: "FFFFFF", dk2: "16213A", lt2: "A7B4C8",
-    accent1: "2DD4BF", accent2: "F59E0B", accent3: "4ADE80", accent4: "FB7185",
-    accent5: "60A5FA", accent6: "C084FC", hlink: "60A5FA", folHlink: "C084FC",
+    dk1: "1E293B", lt1: "FFFFFF", dk2: "0F3D3E", lt2: "EEF4F3",
+    accent1: "0E7C7B", accent2: "D97706", accent3: "2F9E44", accent4: "C2255C",
+    accent5: "2F6DB5", accent6: "7048B6", hlink: "2F6DB5", folHlink: "7048B6",
   },
 };
 const HEX = THEME.colors;
-const LINE = "2A3A5C";            // card outline (not a theme slot)
-const BG = HEX.dk1;
+const LINE = "D3DEDC";            // card outline (not a theme slot)
+const MUTED = "5B6B7F";           // secondary text (not a theme slot)
+const ON_DARK = "B9D9D6";         // secondary text on the dark title slide
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE";      // 13.333 x 7.5 in
@@ -38,21 +39,21 @@ const FOOT = "Self-healing data hall · Bachelor's thesis plan · Savonia Univer
 
 pres.defineSlideMaster({
   title: "TITLE_DARK",
-  background: { color: BG },
+  background: { color: HEX.dk2 },
   objects: [],
 });
 pres.defineSlideMaster({
-  title: "CONTENT_DARK",
-  background: { color: BG },
+  title: "CONTENT_LIGHT",
+  background: { color: HEX.lt1 },
   margin: [0.5, 0.5, 0.6, 0.5],
   objects: [
     { placeholder: { options: { name: "title", type: "title", x: 0.5, y: 0.32, w: 12.3, h: 0.7,
-        fontSize: 30, bold: true, color: C.background1, align: "left", valign: "middle", margin: 0 }, text: "" } },
+        fontSize: 30, bold: true, color: C.text2, align: "left", valign: "middle", margin: 0 }, text: "" } },
     { placeholder: { options: { name: "sub", type: "body", x: 0.5, y: 1.0, w: 12.3, h: 0.42,
         fontSize: 15, italic: true, color: C.accent1, align: "left", valign: "middle", margin: 0 }, text: "" } },
-    { text: { text: FOOT, options: { x: 0.5, y: 7.02, w: 10, h: 0.3, fontSize: 10, color: C.background2, margin: 0 } } },
+    { text: { text: FOOT, options: { x: 0.5, y: 7.02, w: 10, h: 0.3, fontSize: 10, color: MUTED, margin: 0 } } },
   ],
-  slideNumber: { x: 12.3, y: 7.02, w: 0.5, h: 0.3, fontSize: 10, color: C.background2, align: "right" },
+  slideNumber: { x: 12.3, y: 7.02, w: 0.5, h: 0.3, fontSize: 10, color: MUTED, align: "right" },
 });
 
 // ------------------------------------------------------------------ helpers
@@ -76,14 +77,14 @@ async function iconDot(slide, name, x, y, d, fill) {
 
 function card(slide, x, y, w, h, name) {
   slide.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, rectRadius: 0.08,
-    fill: { color: C.text2 }, line: { color: LINE, width: 1 }, objectName: name });
+    fill: { color: HEX.lt2 }, line: { color: LINE, width: 1 }, objectName: name });
 }
 
 function text(slide, t, o) {
-  slide.addText(t, { isTextBox: true, margin: 0, color: C.background1, fontSize: 14, valign: "top", ...o });
+  slide.addText(t, { isTextBox: true, margin: 0, color: C.text1, fontSize: 14, valign: "top", ...o });
 }
 
-function bullets(items, size = 13, color = C.background2) {
+function bullets(items, size = 13, color = MUTED) {
   return items.map((s, i) => ({ text: s, options: { bullet: { indent: 12 }, fontSize: size, color,
     paraSpaceAfter: 3, breakLine: i < items.length - 1 } }));
 }
@@ -94,7 +95,7 @@ function arrow(slide, x, y, color = C.accent1) {
 }
 
 function content(section, title, sub) {
-  const s = pres.addSlide({ masterName: "CONTENT_DARK", sectionTitle: section });
+  const s = pres.addSlide({ masterName: "CONTENT_LIGHT", sectionTitle: section });
   s.addText(title, { placeholder: "title" });
   s.addText(sub, { placeholder: "sub" });
   return s;
@@ -105,15 +106,15 @@ async function build() {
   // 1. Title ---------------------------------------------------------------------------------
   pres.addSection({ title: "Overview" });
   let s = pres.addSlide({ masterName: "TITLE_DARK", sectionTitle: "Overview" });
-  text(s, "SELF-HEALING\nDATA HALL", { x: 0.6, y: 0.55, w: 6.2, h: 1.9, fontSize: 44, bold: true, fontFace: THEME.headFontFace });
+  text(s, "Self-Healing\nData Hall", { x: 0.6, y: 0.55, w: 6.2, h: 1.9, fontSize: 44, bold: true, color: C.background1, fontFace: THEME.headFontFace });
   text(s, "A serverless AWS IoT framework for automated anomaly detection and remediation in data center infrastructure",
-    { x: 0.6, y: 2.5, w: 6.2, h: 0.95, fontSize: 18, color: C.accent1 });
+    { x: 0.6, y: 2.5, w: 6.2, h: 0.95, fontSize: 18, color: ON_DARK });
   text(s, "Bachelor's thesis plan  ·  Mazharul Islam Tusar  ·  Savonia University of Applied Sciences",
-    { x: 0.6, y: 3.5, w: 6.2, h: 0.35, fontSize: 12, color: C.background2 });
+    { x: 0.6, y: 3.5, w: 6.2, h: 0.35, fontSize: 12, color: ON_DARK });
   s.addImage({ path: path.join(FIG, "aws-dashboard-fault.png"), x: 7.1, y: 0.6, w: 5.75, h: 3.1,
     altText: "Live control-room dashboard showing a cooling failure being fixed", objectName: "hero-dashboard" });
   text(s, "Target demo: live control room while a cooling failure is detected and fixed",
-    { x: 7.1, y: 3.78, w: 5.75, h: 0.3, fontSize: 11, italic: true, color: C.background2 });
+    { x: 7.1, y: 3.78, w: 5.75, h: 0.3, fontSize: 11, italic: true, color: ON_DARK });
   const pillars = [
     ["FaBroadcastTower", "DETECT", HEX.accent5, ["IoT telemetry every 10 s", "Thresholds + machine learning", "Confirmed in 30 s"]],
     ["FaTools", "REMEDIATE", HEX.accent1, ["Playbooks in Step Functions", "Commands via device shadows", "Verified on new telemetry"]],
@@ -128,10 +129,10 @@ async function build() {
     text(s, bullets(items, 13), { x: x + 0.25, y: 5.3, w: 3.45, h: 1.05 });
   }
   text(s, "AWS IoT Core  ·  Lambda  ·  EventBridge  ·  Step Functions  ·  DynamoDB  ·  SNS  ·  AWS CDK  ·  Python",
-    { x: 0.6, y: 6.75, w: 12.1, h: 0.35, fontSize: 12, color: C.background2 });
+    { x: 0.6, y: 6.75, w: 12.1, h: 0.35, fontSize: 12, color: ON_DARK });
 
   // 2. Problem and research questions ---------------------------------------------------------
-  s = content("Overview", "WHY THIS THESIS", "Facility faults are frequent and costly, and they are still handled by hand");
+  s = content("Overview", "Why this thesis", "Facility faults are frequent and costly, and they are still handled by hand");
   const stats = [
     ["415 TWh", "electricity used by data centers in 2024, about 1.5 % of the world total (IEA 2025)", HEX.accent1],
     ["> 40 kW", "drawn by one dense GPU rack: a short loss of cooling can throttle or stop it", HEX.accent2],
@@ -141,7 +142,7 @@ async function build() {
     const y = 1.75 + i * 1.62;
     card(s, 0.5, y, 5.2, 1.42, `stat-${i}`);
     text(s, n, { x: 0.75, y: y + 0.18, w: 2.1, h: 1.05, fontSize: 36, bold: true, color: col, valign: "middle" });
-    text(s, l, { x: 2.95, y: y + 0.2, w: 2.55, h: 1.05, fontSize: 12, color: C.background2, valign: "middle" });
+    text(s, l, { x: 2.95, y: y + 0.2, w: 2.55, h: 1.05, fontSize: 12, color: MUTED, valign: "middle" });
   });
   text(s, "RESEARCH QUESTIONS", { x: 6.1, y: 1.75, w: 6.7, h: 0.4, fontSize: 14, bold: true, color: C.accent1 });
   const rqs = [
@@ -153,25 +154,24 @@ async function build() {
     const y = 2.25 + i * 1.22;
     card(s, 6.1, y, 6.73, 1.07, `rq-${k}`);
     text(s, k, { x: 6.3, y: y + 0.15, w: 0.9, h: 0.75, fontSize: 22, bold: true, color: C.accent1, valign: "middle" });
-    text(s, [{ text: t + "  ", options: { bold: true, color: C.background1, fontSize: 14 } },
-             { text: q, options: { color: C.background2, fontSize: 13 } }],
+    text(s, [{ text: t + "  ", options: { bold: true, color: C.text1, fontSize: 14 } },
+             { text: q, options: { color: MUTED, fontSize: 13 } }],
       { x: 7.25, y: y + 0.12, w: 5.4, h: 0.85, valign: "middle" });
   });
   text(s, [{ text: "Problem: ", options: { bold: true, color: C.accent2 } },
            { text: "no validated, cloud-native way to go from IoT sensor data to safe, automatic corrective action within seconds.",
-             options: { color: C.background1 } }],
+             options: { color: C.text1 } }],
     { x: 6.1, y: 6.0, w: 6.73, h: 0.7, fontSize: 14 });
 
   // 3. Architecture ---------------------------------------------------------------------------
   pres.addSection({ title: "Design" });
-  s = content("Design", "SYSTEM ARCHITECTURE", "Event-driven and serverless: nothing runs until a sensor message arrives");
-  card(s, 0.5, 1.7, 8.0, 3.58, "arch-frame");
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.62, y: 1.82, w: 7.76, h: 3.34, rectRadius: 0.05,
-    fill: { color: C.background1 }, line: { color: C.background1 }, objectName: "arch-white" });
+  s = content("Design", "System architecture", "Event-driven and serverless: nothing runs until a sensor message arrives");
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 1.7, w: 8.0, h: 3.58, rectRadius: 0.08,
+    fill: { color: C.background1 }, line: { color: LINE, width: 1 }, objectName: "arch-frame" });
   s.addImage({ path: path.join(FIG, "architecture.png"), x: 0.72, y: 1.92, w: 7.56, h: 3.1,
     altText: "Architecture: gateways, IoT Core, Lambda detector, EventBridge, Step Functions, device shadow", objectName: "arch" });
   text(s, "Gateway → IoT Core → detector Lambda → EventBridge → Step Functions playbook → device shadow → gateway",
-    { x: 0.5, y: 5.45, w: 8.0, h: 0.5, fontSize: 13, color: C.background2 });
+    { x: 0.5, y: 5.45, w: 8.0, h: 0.5, fontSize: 13, color: MUTED });
   const services = [
     ["FaWifi", "IoT Core", "MQTT, certificates, rules, shadows", HEX.accent5],
     ["FaBolt", "Lambda", "detector and playbook steps", HEX.accent2],
@@ -185,13 +185,13 @@ async function build() {
     const y = 1.7 + i * 0.75;
     await iconDot(s, ic, 8.85, y + 0.05, 0.5, col);
     text(s, n, { x: 9.5, y, w: 3.3, h: 0.33, fontSize: 14, bold: true });
-    text(s, r, { x: 9.5, y: y + 0.32, w: 3.3, h: 0.32, fontSize: 12, color: C.background2 });
+    text(s, r, { x: 9.5, y: y + 0.32, w: 3.3, h: 0.32, fontSize: 12, color: MUTED });
   }
   text(s, "Infrastructure as code: six AWS CDK stacks, deployed and removed with one command each; developed locally on LocalStack first",
     { x: 0.5, y: 6.05, w: 12.3, h: 0.5, fontSize: 14, color: C.accent1, italic: true });
 
   // 4. Closed loop and guardrails -------------------------------------------------------------
-  s = content("Design", "CLOSED LOOP: DETECT → DECIDE → ACT → VERIFY", "Every fault type runs through the same playbook workflow with built-in guardrails");
+  s = content("Design", "Closed loop: detect → decide → act → verify", "Every fault type runs through the same playbook workflow with built-in guardrails");
   const steps = [
     ["1  SENSE", HEX.accent5, ["Gateways publish zone telemetry", "MQTT over TLS to IoT Core", "Rule stores and forwards"]],
     ["2  DETECT", HEX.accent6, ["Limits + Isolation Forest", "+ LSTM autoencoder", "3 windows to confirm"]],
@@ -223,12 +223,12 @@ async function build() {
     card(s, x, 4.75, 1.9, 1.75, `guard-${i}`);
     await iconDot(s, ic, x + 0.15, 4.92, 0.5, HEX.accent2);
     text(s, n, { x: x + 0.15, y: 5.55, w: 1.65, h: 0.32, fontSize: 13, bold: true });
-    text(s, d, { x: x + 0.15, y: 5.88, w: 1.65, h: 0.55, fontSize: 12, color: C.background2 });
+    text(s, d, { x: x + 0.15, y: 5.88, w: 1.65, h: 0.55, fontSize: 12, color: MUTED });
   }
 
   // 5. Detection and modes --------------------------------------------------------------------
   pres.addSection({ title: "Method" });
-  s = content("Method", "DETECTION + OPERATING MODES", "Three ways of responding are compared on eight injected fault types");
+  s = content("Method", "Detection and operating modes", "Three ways of responding are compared on eight injected fault types");
   const modes = [
     ["M1", "Alert only", "Static limits raise an alert; a simulated operator responds after 5–30 minutes", HEX.accent4, "Today's practice"],
     ["M2", "Threshold automation", "Static limits start the playbooks automatically", HEX.accent2, "Effect of automation"],
@@ -239,7 +239,7 @@ async function build() {
     card(s, x, 1.75, 2.42, 2.95, `mode-${k}`);
     text(s, k, { x: x + 0.2, y: 1.9, w: 1.2, h: 0.6, fontSize: 28, bold: true, color: col });
     text(s, n, { x: x + 0.2, y: 2.55, w: 2.05, h: 0.4, fontSize: 15, bold: true });
-    text(s, d, { x: x + 0.2, y: 3.0, w: 2.05, h: 1.05, fontSize: 12, color: C.background2 });
+    text(s, d, { x: x + 0.2, y: 3.0, w: 2.05, h: 1.05, fontSize: 12, color: MUTED });
     text(s, tag, { x: x + 0.2, y: 4.2, w: 2.05, h: 0.35, fontSize: 11, italic: true, color: col });
   });
   text(s, "DETECTORS", { x: 0.5, y: 4.95, w: 4, h: 0.4, fontSize: 14, bold: true, color: C.accent1 });
@@ -248,7 +248,7 @@ async function build() {
     const x = 0.5 + i * 1.98;
     card(s, x, 5.38, 1.84, 1.15, `det-${i}`);
     text(s, k, { x: x + 0.15, y: 5.48, w: 1.6, h: 0.4, fontSize: 15, bold: true, color: C.accent1 });
-    text(s, n, { x: x + 0.15, y: 5.88, w: 1.6, h: 0.55, fontSize: 12, color: C.background2 });
+    text(s, n, { x: x + 0.15, y: 5.88, w: 1.6, h: 0.55, fontSize: 12, color: MUTED });
   });
   text(s, "8 FAULT TYPES", { x: 8.55, y: 1.75, w: 4.3, h: 0.4, fontSize: 14, bold: true, color: C.accent2 });
   const faults = [
@@ -267,11 +267,11 @@ async function build() {
   }
   text(s, [{ text: "Data: ", options: { bold: true, color: C.accent1 } },
            { text: "simulated data hall with known ground truth; public SKAB pump data for validation on real equipment",
-             options: { color: C.background2 } }],
+             options: { color: MUTED } }],
     { x: 8.55, y: 5.38, w: 4.28, h: 1.15, fontSize: 13 });
 
   // 6. Evaluation plan ------------------------------------------------------------------------
-  s = content("Method", "EVALUATION PLAN", "Design Science Research: eight testable hypotheses, five experiments");
+  s = content("Method", "Evaluation plan", "Design Science Research: eight testable hypotheses, five experiments");
   const hyps = [
     ["H1", "Faster recovery", "M2 faster than M1"], ["H2", "Better detection", "M3 finds all 8 faults"],
     ["H3", "No false actions", "0 automated false actions"], ["H4", "Real-data validity", "SKAB F1 ≥ limits"],
@@ -283,10 +283,10 @@ async function build() {
     card(s, x, y, 2.85, 1.05, `hyp-${k}`);
     text(s, k, { x: x + 0.15, y: y + 0.15, w: 0.7, h: 0.75, fontSize: 22, bold: true, color: C.accent1, valign: "middle" });
     text(s, n, { x: x + 0.85, y: y + 0.14, w: 1.95, h: 0.38, fontSize: 13, bold: true });
-    text(s, c, { x: x + 0.85, y: y + 0.52, w: 1.95, h: 0.42, fontSize: 11, color: C.background2 });
+    text(s, c, { x: x + 0.85, y: y + 0.52, w: 1.95, h: 0.42, fontSize: 11, color: MUTED });
   });
-  const hdr = (t) => ({ text: t, options: { bold: true, color: C.text1, fill: { color: C.accent1 }, fontSize: 12 } });
-  const cell = (t, o = {}) => ({ text: t, options: { color: C.background1, fill: { color: C.text2 }, fontSize: 12, ...o } });
+  const hdr = (t) => ({ text: t, options: { bold: true, color: C.background1, fill: { color: C.accent1 }, fontSize: 12 } });
+  const cell = (t, o = {}) => ({ text: t, options: { color: C.text1, fill: { color: C.background1 }, fontSize: 12, ...o } });
   const rows = [
     [hdr("Exp."), hdr("Question"), hdr("Design"), hdr("Runs")],
     [cell("E1", { bold: true }), cell("Fault response"), cell("8 faults × 3 modes × 20 paired seeds"), cell("480")],
@@ -299,16 +299,16 @@ async function build() {
     border: { type: "solid", pt: 1, color: LINE }, valign: "middle", margin: 0.06, objectName: "experiments" });
   text(s, [{ text: "Statistics: ", options: { bold: true, color: C.accent1 } },
            { text: "paired runs, Mann–Whitney U with Holm correction, bootstrap 95 % confidence intervals",
-             options: { color: C.background2 } }],
+             options: { color: MUTED } }],
     { x: 6.75, y: 5.35, w: 6.08, h: 0.7, fontSize: 13 });
   text(s, [{ text: "Fast and cheap: ", options: { bold: true, color: C.accent2 } },
            { text: "hundreds of runs in an offline closed loop; AWS only for latency, scale and cost",
-             options: { color: C.background2 } }],
+             options: { color: MUTED } }],
     { x: 6.75, y: 6.05, w: 6.08, h: 0.7, fontSize: 13 });
 
   // 7. Roadmap --------------------------------------------------------------------------------
   pres.addSection({ title: "Plan" });
-  s = content("Plan", "ROADMAP + DELIVERABLES", "Built step by step: locally first, then on AWS");
+  s = content("Plan", "Roadmap and deliverables", "Built step by step: locally first, then on AWS");
   const phases = [
     ["1", "Foundation", "Repository, CDK skeleton, LocalStack, simulator and fault injection", "1–3", HEX.accent5],
     ["2", "Telemetry pipeline", "Gateways, MQTT, topic rule, DynamoDB", "3–4", HEX.accent5],
@@ -323,17 +323,17 @@ async function build() {
     const y = 1.62 + i * 0.56;
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y, w: 1.1, h: 0.46, rectRadius: 0.06,
       fill: { color: col }, line: { color: col }, objectName: `phase-${k}` });
-    text(s, "STEP " + k, { x: 0.5, y, w: 1.1, h: 0.46, fontSize: 12, bold: true, color: C.text1, align: "center", valign: "middle" });
+    text(s, "STEP " + k, { x: 0.5, y, w: 1.1, h: 0.46, fontSize: 12, bold: true, color: C.background1, align: "center", valign: "middle" });
     card(s, 1.75, y, 7.6, 0.46, `phase-row-${k}`);
     text(s, n, { x: 1.9, y, w: 2.0, h: 0.46, fontSize: 13, bold: true, valign: "middle" });
-    text(s, d, { x: 3.9, y, w: 4.6, h: 0.46, fontSize: 11, color: C.background2, valign: "middle" });
+    text(s, d, { x: 3.9, y, w: 4.6, h: 0.46, fontSize: 11, color: MUTED, valign: "middle" });
     text(s, "wk " + wk, { x: 8.45, y, w: 0.82, h: 0.46, fontSize: 11, color: C.accent1, align: "right", valign: "middle" });
   });
   card(s, 9.65, 1.62, 3.18, 2.6, "final-demo");
   await iconDot(s, "FaFlagCheckered", 9.85, 1.8, 0.5, HEX.accent3);
   text(s, "FINAL DEMO", { x: 10.5, y: 1.85, w: 2.2, h: 0.4, fontSize: 15, bold: true, color: C.accent3, valign: "middle" });
   text(s, "A CRAH unit fails in the simulated hall on AWS. The detector finds it, the playbook starts the standby unit and verifies the recovery, and a high-risk UPS fault waits for approval, all live on the dashboard.",
-    { x: 9.85, y: 2.45, w: 2.85, h: 1.85, fontSize: 12, color: C.background2 });
+    { x: 9.85, y: 2.45, w: 2.85, h: 1.85, fontSize: 12, color: MUTED });
   card(s, 9.65, 4.42, 3.18, 2.12, "deliverables");
   text(s, "DELIVERABLES", { x: 9.85, y: 4.57, w: 2.8, h: 0.35, fontSize: 14, bold: true, color: C.accent1 });
   text(s, bullets(["Open-source code and tests", "Six CDK stacks on AWS", "Reproducible experiment data", "Live dashboard", "Thesis report"], 12),
