@@ -35,3 +35,4 @@ logs/
 # Build output and downloaded datasets
 build/
 detection/data/
+thesis/plan/build/
